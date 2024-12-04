@@ -13,36 +13,21 @@ import androidx.activity.ComponentActivity
 import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
-    // Define the correct solution (this is just an example; replace with your actual solution)
-    private val correctSolution = arrayOf(
-        intArrayOf(5, 3, 4, 6, 7, 8, 9, 1, 2),
-        intArrayOf(6, 7, 2, 1, 9, 5, 3, 4, 8),
-        intArrayOf(1, 9, 8, 3, 4, 2, 5, 6, 7),
-        intArrayOf(8, 5, 9, 7, 6, 1, 4, 2, 3),
-        intArrayOf(4, 2, 6, 8, 5, 3, 7, 9, 1),
-        intArrayOf(7, 1, 3, 9, 2, 4, 8, 5, 6),
-        intArrayOf(9, 6, 1, 5, 3, 7, 2, 8, 4),
-        intArrayOf(2, 8, 7, 4, 1, 9, 6, 3, 5),
-        intArrayOf(3, 4, 5, 2, 8, 6, 1, 7, 9)
-    )
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        val sudokuGrid: GridLayout = findViewById(R.id.sudokuGrid)
         val checkSolutionButton = findViewById<Button>(R.id.btnCheckSolution)  // Define the button
 
+        val sudokuGrid: GridLayout = findViewById(R.id.sudokuGrid)
         val gridSize = 9
 
         // Retrieve difficulty level from the Intent
         val difficulty = intent.getStringExtra("DIFFICULTY_LEVEL") ?: "easy"
-        val chanceToBeEmpty = when (difficulty) {
-            "easy" -> 0.2 // 20% cells empty
-            "medium" -> 0.5 // 50% cells empty
-            "hard" -> 0.7 // 70% cells empty
-            else -> 0.2 // Default to easy
-        }
+
+        // Generate the board
+        val fullBoard = generateFullBoard() // Full solved board
+        val puzzleBoard = createPuzzle(fullBoard, difficulty) // Puzzle with empty cells
+
 
         // Initialize the Sudoku grid with EditTexts, as you already did in the previous code
         for (row in 0 until gridSize) {
@@ -72,15 +57,12 @@ class MainActivity : ComponentActivity() {
                 cell.setPadding(10, 10, 10, 10) // Add padding around text
 
                 // Decide whether to show a number or leave the cell empty (random chance)
-                val number = correctSolution[row][col]
-                val randomChance = Random.nextFloat()
-
-                // If the number is not zero and the random chance is below the threshold, pre-fill it
-                if (number != 0 && randomChance > chanceToBeEmpty) {
-                    cell.setText(number.toString()) // Set predefined number
-                    cell.isFocusable = false // Make pre-filled cells non-editable
-                    cell.isClickable = false // Prevent interaction with pre-filled cells
-                    cell.setBackgroundColor(Color.LTGRAY)
+                val number = puzzleBoard[row][col]
+                if (number != 0) {
+                    cell.setText(number.toString()) // Pre-fill number
+                    cell.isFocusable = false // Make non-editable
+                    cell.isClickable = false // Prevent interaction
+                    cell.setBackgroundColor(Color.LTGRAY) // Shade pre-filled cells
                 } else {
                     cell.isFocusableInTouchMode = true // Allow user input on empty cells
                 }
@@ -91,7 +73,6 @@ class MainActivity : ComponentActivity() {
 
         // Set the button click listener here
         checkSolutionButton.setOnClickListener {
-            val gridSize = 9
             for (row in 0 until gridSize) {
                 for (col in 0 until gridSize) {
                     val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
@@ -100,7 +81,7 @@ class MainActivity : ComponentActivity() {
                     // Only check cells that the user has entered something into
                     if (userInput.isNotEmpty() && cell.isFocusable) {
                         val userAnswer = userInput.toInt()
-                        val correctAnswer = correctSolution[row][col]
+                        val correctAnswer = fullBoard[row][col]
 
                         // Check if the user's answer matches the correct answer
                         if (userAnswer == correctAnswer) {
@@ -118,4 +99,66 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+// Function to generate a full Sudoku board
+private fun generateFullBoard(): Array<IntArray> {
+    val board = Array(9) { IntArray(9) { 0 } }
+    fillBoard(board)
+    return board
+}
+
+// Backtracking algorithm to fill the board
+private fun fillBoard(board: Array<IntArray>): Boolean {
+    for (row in 0 until 9) {
+        for (col in 0 until 9) {
+            if (board[row][col] == 0) {
+                val numbers = (1..9).shuffled() // Shuffle numbers for randomness
+                for (num in numbers) {
+                    if (isValidMove(board, row, col, num)) {
+                        board[row][col] = num
+                        if (fillBoard(board)) {
+                            return true
+                        }
+                        board[row][col] = 0 // Backtrack
+                    }
+                }
+                return false
+            }
+        }
+    }
+    return true
+}
+
+// Check if placing a number is valid
+private fun isValidMove(board: Array<IntArray>, row: Int, col: Int, num: Int): Boolean {
+    for (i in 0 until 9) {
+        if (board[row][i] == num || board[i][col] == num) {
+            return false // Row or column conflict
+        }
+        if (board[row / 3 * 3 + i / 3][col / 3 * 3 + i % 3] == num) {
+            return false // Subgrid conflict
+        }
+    }
+    return true
+}
+
+// Function to remove numbers based on difficulty
+private fun createPuzzle(board: Array<IntArray>, difficulty: String): Array<IntArray> {
+    val chanceToBeEmpty = when (difficulty) {
+        "easy" -> 0.2 // 20% cells empty
+        "medium" -> 0.5 // 50% cells empty
+        "hard" -> 0.7 // 70% cells empty
+        else -> 0.2
+    }
+
+    val puzzle = board.map { it.clone() }.toTypedArray() // Clone the board
+    for (row in 0 until 9) {
+        for (col in 0 until 9) {
+            if (Random.nextFloat() < chanceToBeEmpty) {
+                puzzle[row][col] = 0 // Empty the cell
+            }
+        }
+    }
+    return puzzle
 }
