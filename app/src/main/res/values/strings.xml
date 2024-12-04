@@ -4,4 +4,7 @@
     <string name="welcome_to_sudoku">Welcome to Sudoku</string>
     <string name="start_game_button">Start Game</string>
     <string name="title_activity_home">HomeActivity</string>
+    <string name="easy_button">Easy</string>
+    <string name="medium_button">Medium</string>
+    <string name="hard_button">Hard</string>
 </resources>

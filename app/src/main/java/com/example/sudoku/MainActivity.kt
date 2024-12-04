@@ -34,7 +34,15 @@ class MainActivity : ComponentActivity() {
         val checkSolutionButton = findViewById<Button>(R.id.btnCheckSolution)  // Define the button
 
         val gridSize = 9
-        val chanceToBeEmpty = 0.3 // 30% chance for a cell to be empty (0)
+
+        // Retrieve difficulty level from the Intent
+        val difficulty = intent.getStringExtra("DIFFICULTY_LEVEL") ?: "easy"
+        val chanceToBeEmpty = when (difficulty) {
+            "easy" -> 0.2 // 20% cells empty
+            "medium" -> 0.5 // 50% cells empty
+            "hard" -> 0.7 // 70% cells empty
+            else -> 0.2 // Default to easy
+        }
 
         // Initialize the Sudoku grid with EditTexts, as you already did in the previous code
         for (row in 0 until gridSize) {

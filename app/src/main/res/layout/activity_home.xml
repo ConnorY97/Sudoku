@@ -14,12 +14,27 @@
         android:textSize="24sp"
         android:layout_marginBottom="32dp"/>
 
-    <!-- Start Game Button -->
+    <!-- Easy Button -->
     <Button
-        android:id="@+id/startGameButton"
+        android:id="@+id/easyButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/start_game_button"
-        android:textSize="18sp"
-        android:layout_marginTop="16dp"/>
+        android:text="@string/easy_button"
+        android:layout_marginTop="8dp" />
+
+    <!-- Medium Button -->
+    <Button
+        android:id="@+id/mediumButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/medium_button"
+        android:layout_marginTop="8dp" />
+
+    <!-- Hard Button -->
+    <Button
+        android:id="@+id/hardButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hard_button"
+        android:layout_marginTop="8dp" />
 </LinearLayout>

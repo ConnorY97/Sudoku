@@ -5,19 +5,34 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.activity.ComponentActivity
 
-class HomeActivity : ComponentActivity() {  // Using ComponentActivity
+class HomeActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)  // Set the home screen layout
+        setContentView(R.layout.activity_home)
 
-        // Find the start game button
-        val startGameButton = findViewById<Button>(R.id.startGameButton)
-
-        // Set the click listener to navigate to the game board
-        startGameButton.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java) // Navigate to the Sudoku game
-            startActivity(intent)
+        // Easy Button
+        val easyButton = findViewById<Button>(R.id.easyButton)
+        easyButton.setOnClickListener {
+            startGame("easy")
         }
+
+        // Medium Button
+        val mediumButton = findViewById<Button>(R.id.mediumButton)
+        mediumButton.setOnClickListener {
+            startGame("medium")
+        }
+
+        // Hard Button
+        val hardButton = findViewById<Button>(R.id.hardButton)
+        hardButton.setOnClickListener {
+            startGame("hard")
+        }
+    }
+
+    private fun startGame(difficulty: String) {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("DIFFICULTY_LEVEL", difficulty) // Pass difficulty level
+        startActivity(intent)
     }
 }
