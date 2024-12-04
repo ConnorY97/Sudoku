@@ -1,5 +1,6 @@
 package com.example.sudoku
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -11,6 +12,7 @@ import android.widget.EditText
 import android.widget.GridLayout
 import androidx.activity.ComponentActivity
 import kotlin.random.Random
+import com.google.gson.Gson
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,73 +30,81 @@ class MainActivity : ComponentActivity() {
         val fullBoard = generateFullBoard() // Full solved board
         val puzzleBoard = createPuzzle(fullBoard, difficulty) // Puzzle with empty cells
 
+        initializeGrid(this, gridSize, puzzleBoard, sudokuGrid)
 
-        // Initialize the Sudoku grid with EditTexts, as you already did in the previous code
+        checkSolutions(checkSolutionButton, gridSize, sudokuGrid, fullBoard)
+    }
+}
+
+// Initialize the Sudoku grid with EditTexts, as you already did in the previous code
+private fun initializeGrid(context: Context, gridSize: Int, puzzleBoard: Array<IntArray>, sudokuGrid: GridLayout) {
+    for (row in 0 until gridSize) {
+        for (col in 0 until gridSize) {
+            val cell = EditText(context)
+            cell.layoutParams = GridLayout.LayoutParams().apply {
+                width = 100 // Reduce the width slightly
+                height = 100 // Keep the height as is
+                columnSpec = GridLayout.spec(col)
+                rowSpec = GridLayout.spec(row)
+
+                // Apply thicker margins for 3rd and 6th rows and columns
+                setMargins(
+                    if (col % 3 == 0 && col != 0) 4 else 1,  // Left margin
+                    if (row % 3 == 0 && row != 0) 4 else 1,  // Top margin
+                    1,                                       // Right margin
+                    1                                        // Bottom margin
+                )
+            }
+
+            cell.textAlignment = EditText.TEXT_ALIGNMENT_CENTER
+            cell.setBackgroundResource(android.R.color.white)
+            cell.inputType =
+                InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_NORMAL
+            cell.maxLines = 1  // Ensure only 1 line of input
+            cell.filters = arrayOf(InputFilter.LengthFilter(1))  // Limit input to one digit
+            cell.gravity = Gravity.CENTER // Center text both vertically and horizontally
+            cell.setPadding(10, 10, 10, 10) // Add padding around text
+
+            // Decide whether to show a number or leave the cell empty (random chance)
+            val number = puzzleBoard[row][col]
+            if (number != 0) {
+                cell.setText(number.toString()) // Pre-fill number
+                cell.isFocusable = false // Make non-editable
+                cell.isClickable = false // Prevent interaction
+                cell.setBackgroundColor(Color.LTGRAY) // Shade pre-filled cells
+            } else {
+                cell.isFocusableInTouchMode = true // Allow user input on empty cells
+            }
+
+            sudokuGrid.addView(cell)
+        }
+    }
+}
+
+// Set the button click listener here
+private fun checkSolutions(checkSolutionButton: Button, gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntArray>) {
+    checkSolutionButton.setOnClickListener {
         for (row in 0 until gridSize) {
             for (col in 0 until gridSize) {
-                val cell = EditText(this)
-                cell.layoutParams = GridLayout.LayoutParams().apply {
-                    width = 100 // Reduce the width slightly
-                    height = 100 // Keep the height as is
-                    columnSpec = GridLayout.spec(col)
-                    rowSpec = GridLayout.spec(row)
+                val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
+                val userInput = cell.text.toString()
 
-                    // Apply thicker margins for 3rd and 6th rows and columns
-                    setMargins(
-                        if (col % 3 == 0 && col != 0) 4 else 1,  // Left margin
-                        if (row % 3 == 0 && row != 0) 4 else 1,  // Top margin
-                        1,                                       // Right margin
-                        1                                        // Bottom margin
-                    )
-                }
+                // Only check cells that the user has entered something into
+                if (userInput.isNotEmpty() && cell.isFocusable) {
+                    val userAnswer = userInput.toInt()
+                    val correctAnswer = fullBoard[row][col]
 
-                cell.textAlignment = EditText.TEXT_ALIGNMENT_CENTER
-                cell.setBackgroundResource(android.R.color.white)
-                cell.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_NORMAL
-                cell.maxLines = 1  // Ensure only 1 line of input
-                cell.filters = arrayOf(InputFilter.LengthFilter(1))  // Limit input to one digit
-                cell.gravity = Gravity.CENTER // Center text both vertically and horizontally
-                cell.setPadding(10, 10, 10, 10) // Add padding around text
-
-                // Decide whether to show a number or leave the cell empty (random chance)
-                val number = puzzleBoard[row][col]
-                if (number != 0) {
-                    cell.setText(number.toString()) // Pre-fill number
-                    cell.isFocusable = false // Make non-editable
-                    cell.isClickable = false // Prevent interaction
-                    cell.setBackgroundColor(Color.LTGRAY) // Shade pre-filled cells
-                } else {
-                    cell.isFocusableInTouchMode = true // Allow user input on empty cells
-                }
-
-                sudokuGrid.addView(cell)
-            }
-        }
-
-        // Set the button click listener here
-        checkSolutionButton.setOnClickListener {
-            for (row in 0 until gridSize) {
-                for (col in 0 until gridSize) {
-                    val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
-                    val userInput = cell.text.toString()
-
-                    // Only check cells that the user has entered something into
-                    if (userInput.isNotEmpty() && cell.isFocusable) {
-                        val userAnswer = userInput.toInt()
-                        val correctAnswer = fullBoard[row][col]
-
-                        // Check if the user's answer matches the correct answer
-                        if (userAnswer == correctAnswer) {
-                            cell.setBackgroundColor(Color.GREEN)  // Correct: green
-                        } else {
-                            cell.setBackgroundColor(Color.RED)    // Incorrect: red
-                        }
-
-                        // Reset the cell's color after a slight delay
-                        Handler().postDelayed({
-                            cell.setBackgroundColor(Color.WHITE) // Reset to white
-                        }, 1000) // 1000ms (1 second) delay
+                    // Check if the user's answer matches the correct answer
+                    if (userAnswer == correctAnswer) {
+                        cell.setBackgroundColor(Color.GREEN)  // Correct: green
+                    } else {
+                        cell.setBackgroundColor(Color.RED)    // Incorrect: red
                     }
+
+                    // Reset the cell's color after a slight delay
+                    Handler().postDelayed({
+                        cell.setBackgroundColor(Color.WHITE) // Reset to white
+                    }, 1000) // 1000ms (1 second) delay
                 }
             }
         }
@@ -161,4 +171,18 @@ private fun createPuzzle(board: Array<IntArray>, difficulty: String): Array<IntA
         }
     }
     return puzzle
+}
+
+// Function to save the board to be played later
+private fun saveGame(context: Context, puzzleBoard: Array<IntArray>, solvedBoard: Array<IntArray>) {
+    val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
+    val editor = sharedPreferences.edit()
+
+    // Convert boards to JSON strings
+    val gson = Gson()
+    editor.putString("puzzleBoard", gson.toJson(puzzleBoard))
+    editor.putString("solvedBoard", gson.toJson(solvedBoard))
+
+    // Save progress
+    editor.apply()
 }
