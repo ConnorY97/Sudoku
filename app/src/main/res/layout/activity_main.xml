@@ -1,0 +1,26 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <!-- Game Board -->
+    <GridLayout
+        android:id="@+id/sudokuGrid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="9"
+        android:rowCount="9"
+        android:background="#000000"
+        android:padding="2dp" />
+
+    <!-- Controls -->
+    <Button
+        android:id="@+id/btnCheckSolution"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Check Solution"
+        android:layout_marginTop="16dp" />
+</LinearLayout>
