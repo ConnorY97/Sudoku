@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Sudoku</string>
+    <string name="check_solution_button">Check Solution</string>
 </resources>
