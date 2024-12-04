@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.widget.EditText
 import android.widget.GridLayout
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,32 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.sudoku.ui.theme.SudokuTheme
 
-//class MainActivity : ComponentActivity() {
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        enableEdgeToEdge()
-//
-//        val people = listOf("John", "jack")
-//
-//        setContent {
-//            SudokuTheme {
-//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//                    Greeting(
-//                        name = "Android",
-//                        modifier = Modifier.padding(innerPadding)
-//                    )
-//                    LazyColumn {
-//                        items(people) {
-//                            ListItem(it)
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,19 +54,19 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    val people = listOf("John", "jack")
-    SudokuTheme {
-        Greeting("Android")
-        LazyColumn {
-            items(people) {
-                ListItem(it)
-            }
-        }
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun GreetingPreview() {
+//    val people = listOf("John", "jack")
+//    SudokuTheme {
+//        Greeting("Android")
+//        LazyColumn {
+//            items(people) {
+//                ListItem(it)
+//            }
+//        }
+//    }
+//}
 
 @Composable
 fun ListItem(name: String) {
