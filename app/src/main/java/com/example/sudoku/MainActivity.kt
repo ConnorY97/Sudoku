@@ -210,9 +210,8 @@ private fun initializeGrid(
     }
 }
 
-
 // Set the button click listener here
-private fun checkSolutions(gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntArray>) {
+fun checkSolutions(gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntArray>) {
     for (row in 0 until gridSize) {
         for (col in 0 until gridSize) {
             val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
@@ -282,7 +281,7 @@ private fun isValidMove(board: Array<IntArray>, row: Int, col: Int, num: Int): B
 }
 
 // Function to remove numbers based on difficulty
-private fun createPuzzle(board: Array<IntArray>, difficulty: String): Array<IntArray> {
+fun createPuzzle(board: Array<IntArray>, difficulty: String): Array<IntArray> {
     val chanceToBeEmpty = when (difficulty) {
         "easy" -> 0.2 // 20% cells empty
         "medium" -> 0.5 // 50% cells empty
