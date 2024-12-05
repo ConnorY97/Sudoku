@@ -28,11 +28,21 @@ class HomeActivity : ComponentActivity() {
         hardButton.setOnClickListener {
             startGame("hard")
         }
+
+        val loadButton = findViewById<Button>(R.id.loadGameButton)
+        loadButton.setOnClickListener {
+            loadBoard()
+        }
     }
 
     private fun startGame(difficulty: String) {
         val intent = Intent(this, MainActivity::class.java)
         intent.putExtra("DIFFICULTY_LEVEL", difficulty) // Pass difficulty level
+        startActivity(intent)
+    }
+
+    private fun loadBoard() {
+        val intent = Intent(this, LoadActivity::class.java)
         startActivity(intent)
     }
 }

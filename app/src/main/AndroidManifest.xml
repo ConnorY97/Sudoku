@@ -19,12 +19,18 @@
             android:theme="@style/Theme.Sudoku">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".MainActivity"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".LoadActivity"
+            android:exported="false"
+            android:label="@string/title_activity_load"
+            android:theme="@style/Theme.Sudoku" />
     </application>
 
 </manifest>

@@ -1,6 +1,7 @@
 package com.example.sudoku
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -19,7 +20,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val checkSolutionButton = findViewById<Button>(R.id.btnCheckSolution)  // Define the button
-
+        val saveGameButton = findViewById<Button>(R.id.btnSaveGame)
         val sudokuGrid: GridLayout = findViewById(R.id.sudokuGrid)
         val gridSize = 9
 
@@ -33,6 +34,7 @@ class MainActivity : ComponentActivity() {
         initializeGrid(this, gridSize, puzzleBoard, sudokuGrid)
 
         checkSolutions(checkSolutionButton, gridSize, sudokuGrid, fullBoard)
+        saveGame(saveGameButton, this, "temp", puzzleBoard, fullBoard)
     }
 }
 
@@ -57,6 +59,7 @@ private fun initializeGrid(context: Context, gridSize: Int, puzzleBoard: Array<I
             }
 
             cell.textAlignment = EditText.TEXT_ALIGNMENT_CENTER
+
             cell.setBackgroundResource(android.R.color.white)
             cell.inputType =
                 InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_NORMAL
@@ -71,7 +74,8 @@ private fun initializeGrid(context: Context, gridSize: Int, puzzleBoard: Array<I
                 cell.setText(number.toString()) // Pre-fill number
                 cell.isFocusable = false // Make non-editable
                 cell.isClickable = false // Prevent interaction
-                cell.setBackgroundColor(Color.LTGRAY) // Shade pre-filled cells
+                cell.setTypeface(null, android.graphics.Typeface.BOLD)
+                //cell.setBackgroundColor(Color.LTGRAY) // Shade pre-filled cells
             } else {
                 cell.isFocusableInTouchMode = true // Allow user input on empty cells
             }
@@ -173,21 +177,26 @@ private fun createPuzzle(board: Array<IntArray>, difficulty: String): Array<IntA
     return puzzle
 }
 
-fun saveGame(context: Context, boardName: String, puzzleBoard: Array<IntArray>, solvedBoard: Array<IntArray>) {
-    val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
-    val editor = sharedPreferences.edit()
-
-    // Convert boards to JSON strings
-    val gson = Gson()
-    editor.putString("${boardName}_puzzleBoard", gson.toJson(puzzleBoard))
-    editor.putString("${boardName}_solvedBoard", gson.toJson(solvedBoard))
-
-    // Save the board name in the list of saved boards
-    val savedBoards = sharedPreferences.getStringSet("SavedBoards", mutableSetOf()) ?: mutableSetOf()
-    savedBoards.add(boardName)
-    editor.putStringSet("SavedBoards", savedBoards)
-
-    editor.apply()
+fun saveGame(saveGame: Button, context: Context, boardName: String, puzzleBoard: Array<IntArray>, solvedBoard: Array<IntArray>) {
+    saveGame.setOnClickListener {
+        val intent = Intent(context, HomeActivity::class.java)
+//        val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
+//        val editor = sharedPreferences.edit()
+//
+//        // Convert boards to JSON strings
+//        val gson = Gson()
+//        editor.putString("${boardName}_puzzleBoard", gson.toJson(puzzleBoard))
+//        editor.putString("${boardName}_solvedBoard", gson.toJson(solvedBoard))
+//
+//        // Save the board name in the list of saved boards
+//        val savedBoards =
+//            sharedPreferences.getStringSet("SavedBoards", mutableSetOf()) ?: mutableSetOf()
+//        savedBoards.add(boardName)
+//        editor.putStringSet("SavedBoards", savedBoards)
+//
+//        editor.apply()
+        context.startActivity(intent)
+    }
 }
 
 fun loadGame(context: Context, boardName: String): Pair<Array<IntArray>?, Array<IntArray>?> {

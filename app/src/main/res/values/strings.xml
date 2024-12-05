@@ -8,4 +8,6 @@
     <string name="medium_button">Medium</string>
     <string name="hard_button">Hard</string>
     <string name="load_game">Load Game</string>
+    <string name="save_game">Save Game</string>
+    <string name="title_activity_load">LoadActivity</string>
 </resources>
