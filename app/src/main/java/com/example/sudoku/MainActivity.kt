@@ -1,6 +1,5 @@
 package com.example.sudoku
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -8,7 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.text.InputFilter
 import android.text.InputType
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
@@ -16,7 +14,6 @@ import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.appcompat.app.AlertDialog
 import kotlin.random.Random
 import com.google.gson.Gson
 
@@ -30,21 +27,55 @@ class MainActivity : ComponentActivity() {
         val boardNameInput = findViewById<EditText>(R.id.boardNameInput)
         val confirmSaveButton = findViewById<Button>(R.id.confirmSaveButton)
         val gridSize = 9
+        var fullBoard = Array(gridSize) { IntArray(gridSize) { 0 } } // Empty 9x9 grid
+        var puzzleBoard = Array(gridSize) { IntArray(gridSize) { 0 } } // Empty 9x9 grid
 
-        // Retrieve difficulty level from the Intent
-        val difficulty = intent.getStringExtra("DIFFICULTY_LEVEL") ?: "easy"
+        // Get the game mode from the Intent (null check instead of empty string check)
+        val gameMode = intent.getStringExtra("GAME_MODE")
 
-        // Generate the board
-        val fullBoard = generateFullBoard() // Full solved board
-        val puzzleBoard = createPuzzle(fullBoard, difficulty) // Puzzle with empty cells
+        if (!gameMode.isNullOrEmpty()) {
+            // If in load game mode, try to load the board
+            val boardName = intent.getStringExtra("BOARD_NAME")
 
-        initializeGrid(this, gridSize, puzzleBoard, sudokuGrid)
+            if (boardName != null) {
+                // Try loading the saved game
+                val (loadedPuzzleBoard, loadedFullBoard) = loadGame(this, boardName)
+
+                if (loadedPuzzleBoard != null && loadedFullBoard != null) {
+                    // Successfully loaded, initialize grid with the puzzleBoard
+                    puzzleBoard = loadedPuzzleBoard
+                    fullBoard = loadedFullBoard
+                    initializeGrid(this, gridSize, puzzleBoard, sudokuGrid)
+                } else {
+                    // If board loading failed, show a toast and navigate to Home
+                    Toast.makeText(this, "Failed to load board, invalid name!", Toast.LENGTH_SHORT).show()
+                    val homeScreen = Intent(this, HomeActivity::class.java)
+                    startActivity(homeScreen)
+                    finish()  // Optionally finish the current activity to avoid going back
+                }
+            } else {
+                // If no boardName is provided, show an error message
+                Toast.makeText(this, "Invalid board name!", Toast.LENGTH_SHORT).show()
+                val homeScreen = Intent(this, HomeActivity::class.java)
+                startActivity(homeScreen)
+                finish()  // Exit the activity
+            }
+        } else {
+            // If in new game mode, generate a new board based on difficulty
+            val difficulty = intent.getStringExtra("DIFFICULTY_LEVEL") ?: "easy"  // Default to easy if not provided
+            fullBoard = generateFullBoard() // Full solved board
+            puzzleBoard = createPuzzle(fullBoard, difficulty) // Puzzle with empty cells
+
+            // Initialize the grid with the new puzzle
+            initializeGrid(this, gridSize, puzzleBoard, sudokuGrid)
+        }
 
         checkSolutionButton.setOnClickListener {
             checkSolutions(gridSize, sudokuGrid, fullBoard)
         }
 
         saveGameButton.setOnClickListener {
+            updatePuzzleBoard(sudokuGrid, puzzleBoard)
             // Hide the board while we take input
             sudokuGrid.visibility = View.INVISIBLE
             checkSolutionButton.visibility = View.INVISIBLE
@@ -84,7 +115,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
 
+// Function to update puzzleBoard with user input from EditText grid
+private fun updatePuzzleBoard(sudokuGrid: GridLayout, puzzleBoard: Array<IntArray>) {
+    for (row in 0 until 9) {
+        for (col in 0 until 9) {
+            val cell = sudokuGrid.getChildAt(row * 9 + col) as EditText
+            val userInput = cell.text.toString()
+
+            // If the cell has user input, update puzzleBoard
+            if (userInput.isNotEmpty()) {
+                puzzleBoard[row][col] = userInput.toInt()
+            } else {
+                puzzleBoard[row][col] = 0 // Empty cells are 0
+            }
+        }
     }
 }
 
@@ -265,4 +312,3 @@ fun loadGame(context: Context, boardName: String): Pair<Array<IntArray>?, Array<
 
     return Pair(puzzleBoard, solvedBoard)
 }
-
