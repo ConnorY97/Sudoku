@@ -139,48 +139,53 @@ private fun updatePuzzleBoard(sudokuGrid: GridLayout, puzzleBoard: Array<IntArra
 private fun initializeGrid(context: Context, gridSize: Int, puzzleBoard: Array<IntArray>, sudokuGrid: GridLayout) {
     for (row in 0 until gridSize) {
         for (col in 0 until gridSize) {
-            val cell = EditText(context)
+            // Get the existing EditText from the grid, or create a new one if it doesn't exist
+            val cell = sudokuGrid.getChildAt(row * gridSize + col) as? EditText ?: EditText(context)
+
+            // Set the layout parameters for the cell
             cell.layoutParams = GridLayout.LayoutParams().apply {
-                width = 100 // Reduce the width slightly
-                height = 100 // Keep the height as is
+                width = 100 // Adjust width
+                height = 100 // Keep height as is
                 columnSpec = GridLayout.spec(col)
                 rowSpec = GridLayout.spec(row)
 
-                // Apply thicker margins for 3rd and 6th rows and columns
                 setMargins(
-                    if (col % 3 == 0 && col != 0) 4 else 1,  // Left margin
-                    if (row % 3 == 0 && row != 0) 4 else 1,  // Top margin
-                    1,                                       // Right margin
-                    1                                        // Bottom margin
+                    if (col % 3 == 0 && col != 0) 4 else 1, // Left margin
+                    if (row % 3 == 0 && row != 0) 4 else 1, // Top margin
+                    1,  // Right margin
+                    1   // Bottom margin
                 )
             }
 
+            // Configure the text and interactivity for each cell
             cell.textAlignment = EditText.TEXT_ALIGNMENT_CENTER
-
             cell.setBackgroundResource(android.R.color.white)
-            cell.inputType =
-                InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_NORMAL
-            cell.maxLines = 1  // Ensure only 1 line of input
-            cell.filters = arrayOf(InputFilter.LengthFilter(1))  // Limit input to one digit
-            cell.gravity = Gravity.CENTER // Center text both vertically and horizontally
-            cell.setPadding(10, 10, 10, 10) // Add padding around text
+            cell.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_NORMAL
+            cell.maxLines = 1
+            cell.filters = arrayOf(InputFilter.LengthFilter(1)) // Limit to one digit
+            cell.gravity = Gravity.CENTER
+            cell.setPadding(10, 10, 10, 10)
 
-            // Decide whether to show a number or leave the cell empty (random chance)
+            // Get the number for the current cell (from the puzzle board)
             val number = puzzleBoard[row][col]
             if (number != 0) {
-                cell.setText(number.toString()) // Pre-fill number
-                cell.isFocusable = false // Make non-editable
-                cell.isClickable = false // Prevent interaction
-                cell.setTypeface(null, android.graphics.Typeface.BOLD)
-                //cell.setBackgroundColor(Color.LTGRAY) // Shade pre-filled cells
+                cell.setText(number.toString())  // Pre-fill number
+                cell.isFocusable = false         // Make it non-editable
+                cell.isClickable = false         // Disable interaction with pre-filled cells
+                cell.setTypeface(null, android.graphics.Typeface.BOLD) // Bold pre-filled numbers
             } else {
-                cell.isFocusableInTouchMode = true // Allow user input on empty cells
+                // Allow user input for empty cells
+                cell.isFocusableInTouchMode = true
             }
 
-            sudokuGrid.addView(cell)
+            // Add the cell to the grid
+            if (!sudokuGrid.isFocused) {
+                sudokuGrid.addView(cell)
+            }
         }
     }
 }
+
 
 // Set the button click listener here
 private fun checkSolutions(gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntArray>) {
