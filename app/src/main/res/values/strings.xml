@@ -9,5 +9,8 @@
     <string name="hard_button">Hard</string>
     <string name="load_game">Load Game</string>
     <string name="save_game">Save Game</string>
-    <string name="title_activity_load">LoadActivity</string>
+    <string name="title_activity_load">Load Activity</string>
+    <string name="select_saved_game">Select Saved Game</string>
+    <string name="board_name_input">Enter Board Name</string>
+    <string name="confirm_save">Confirm Save</string>
 </resources>
