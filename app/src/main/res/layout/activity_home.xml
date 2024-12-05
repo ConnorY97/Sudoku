@@ -14,6 +14,14 @@
         android:textSize="24sp"
         android:layout_marginBottom="32dp"/>
 
+    <!-- Load Button -->
+    <Button
+        android:id="@+id/loadGameButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/load_game"
+        android:layout_marginTop="8dp" />
+
     <!-- Easy Button -->
     <Button
         android:id="@+id/easyButton"

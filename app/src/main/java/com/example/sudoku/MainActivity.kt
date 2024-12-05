@@ -173,16 +173,34 @@ private fun createPuzzle(board: Array<IntArray>, difficulty: String): Array<IntA
     return puzzle
 }
 
-// Function to save the board to be played later
-private fun saveGame(context: Context, puzzleBoard: Array<IntArray>, solvedBoard: Array<IntArray>) {
+fun saveGame(context: Context, boardName: String, puzzleBoard: Array<IntArray>, solvedBoard: Array<IntArray>) {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
 
     // Convert boards to JSON strings
     val gson = Gson()
-    editor.putString("puzzleBoard", gson.toJson(puzzleBoard))
-    editor.putString("solvedBoard", gson.toJson(solvedBoard))
+    editor.putString("${boardName}_puzzleBoard", gson.toJson(puzzleBoard))
+    editor.putString("${boardName}_solvedBoard", gson.toJson(solvedBoard))
 
-    // Save progress
+    // Save the board name in the list of saved boards
+    val savedBoards = sharedPreferences.getStringSet("SavedBoards", mutableSetOf()) ?: mutableSetOf()
+    savedBoards.add(boardName)
+    editor.putStringSet("SavedBoards", savedBoards)
+
     editor.apply()
 }
+
+fun loadGame(context: Context, boardName: String): Pair<Array<IntArray>?, Array<IntArray>?> {
+    val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
+    val gson = Gson()
+
+    // Retrieve boards from JSON strings
+    val puzzleBoardJson = sharedPreferences.getString("${boardName}_puzzleBoard", null)
+    val solvedBoardJson = sharedPreferences.getString("${boardName}_solvedBoard", null)
+
+    val puzzleBoard = if (puzzleBoardJson != null) gson.fromJson(puzzleBoardJson, Array<IntArray>::class.java) else null
+    val solvedBoard = if (solvedBoardJson != null) gson.fromJson(solvedBoardJson, Array<IntArray>::class.java) else null
+
+    return Pair(puzzleBoard, solvedBoard)
+}
+

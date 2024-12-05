@@ -7,4 +7,5 @@
     <string name="easy_button">Easy</string>
     <string name="medium_button">Medium</string>
     <string name="hard_button">Hard</string>
+    <string name="load_game">Load Game</string>
 </resources>
