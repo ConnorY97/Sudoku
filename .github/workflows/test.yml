@@ -18,4 +18,13 @@ jobs:
       - name: Run Tests
         shell: bash
         run: |
-          dir
+          ./gradlew test
+
+      - name: Convert Results
+        shell: bash
+        run: |
+          python3 ./Scripts/GenerateResults.py .\app\build\test-results\testReleaseUnitTest\TEST-com.example.sudoku.SudokuTest.xml
+
+      - name: Publish Results
+        if: success()
+        run: npx github-actions-ctrf "/home/connor/Documents/SudokuResults/results.json"

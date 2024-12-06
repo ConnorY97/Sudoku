@@ -140,7 +140,7 @@ if __name__ == "__main__":
     try:
         # Generate JSON data
 
-        json_output_file = "C:\\Users\\c_you\\Downloads\\results.json"
+        json_output_file = "/home/connor/Documents/SudokuResults/results.json"
         print(json_output_file)
 
         # Ensure the output directories exist
