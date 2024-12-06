@@ -1,0 +1,16 @@
+name: Testing on self hosted runner
+
+on:
+  workflow_dispatch:
+    {}
+
+jobs:
+  testing:
+    name: Run Tests
+    runs-on: self-hosted  # Use the self-hosted runner
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          lfs: false
