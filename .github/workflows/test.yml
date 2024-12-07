@@ -13,12 +13,7 @@ jobs:
       - name: Update Perms
         shell: bash
         run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 775 ../Sudoku
-
-      - name: Update Perms 2
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R u+rw ../Sudoku
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 776 ../Sudoku
 
       - name: Checkout Repo
         uses: actions/checkout@v4
