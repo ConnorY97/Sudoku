@@ -15,6 +15,11 @@ jobs:
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 776 ../Sudoku
 
+      - name: Setting Ownership
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chown -R connor:connor ../Sudoku
+
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
