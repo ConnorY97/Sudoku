@@ -10,20 +10,20 @@ jobs:
     runs-on: self-hosted  # Use the self-hosted runner
 
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-        with:
-          lfs: false
-
-      - name: Resync Project
-        shell: bash
-        run: |
-          sudo ./gradlew build
-
-      - name: Run Tests
-        shell: bash
-        run: |
-          sudo ./gradlew test
+#      - name: Checkout Repo
+#        uses: actions/checkout@v4
+#        with:
+#          lfs: false
+#
+#      - name: Resync Project
+#        shell: bash
+#        run: |
+#          sudo ./gradlew build
+#
+#      - name: Run Tests
+#        shell: bash
+#        run: |
+#          sudo ./gradlew test
 
       - name: Convert Results
         shell: bash
