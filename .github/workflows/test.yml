@@ -25,10 +25,10 @@ jobs:
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S echo chmod 766 gradlew
 
-      - name: Resync Project
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew build
+#      - name: Resync Project
+#        shell: bash
+#        run: |
+#          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew build
 
       - name: Run Tests
         shell: bash
