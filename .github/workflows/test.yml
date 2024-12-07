@@ -1,4 +1,4 @@
-name: Testing on self hosted runner
+name: Run Sudoku Tests
 
 on:
   workflow_dispatch:
