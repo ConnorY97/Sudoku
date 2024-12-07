@@ -15,6 +15,12 @@ jobs:
         with:
           lfs: false
 
+      - name: Update gradlew perms
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} \
+          sudo chmod 755 gradlew
+
       - name: Run Tests
         shell: bash
         run: |
