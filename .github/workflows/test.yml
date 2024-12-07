@@ -15,6 +15,12 @@ jobs:
         with:
           lfs: false
 
+      - name: Create Properties File
+        id: create_prop_file
+        shell: bash
+        run: |
+          echo "sdk.dir=/home/connor/Android/Sdk" >> local.properties
+
       - name: Update Perms
         shell: bash
         run: |
@@ -43,3 +49,9 @@ jobs:
       - name: Publish Results
         if: success()
         run: npx github-actions-ctrf "/home/connor/Documents/SudokuResults/results.json"
+
+      - name: Clean up
+        if: steps.crate_porp_file == 'success'
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S ./local.properties
