@@ -10,6 +10,11 @@ jobs:
     runs-on: self-hosted  # Use the self-hosted runner
 
     steps:
+      - name: Update Perms
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 775 ../Sudoku
+
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
@@ -20,11 +25,6 @@ jobs:
         shell: bash
         run: |
           echo "sdk.dir=/home/connor/Android/Sdk" >> local.properties
-
-      - name: Update Perms
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 775 ../Sudoku
 
       - name: Update gradlew Perms
         shell: bash
@@ -51,7 +51,7 @@ jobs:
         run: npx github-actions-ctrf "/home/connor/Documents/SudokuResults/results.json"
 
       - name: Clean up
-        if: steps.crate_porp_file == 'success'
+        if: steps.crate_prop_file == 'success'
         shell: bash
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S ./local.properties
