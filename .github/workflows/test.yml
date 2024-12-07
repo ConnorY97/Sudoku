@@ -10,10 +10,15 @@ jobs:
     runs-on: self-hosted  # Use the self-hosted runner
 
     steps:
-#      - name: Checkout Repo
-#        uses: actions/checkout@v4
-#        with:
-#          lfs: false
+      - name: Update Perms
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 775 ./Sudoku
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          lfs: false
 #
 #      - name: Resync Project
 #        shell: bash
@@ -25,11 +30,11 @@ jobs:
 #        run: |
 #          sudo ./gradlew test
 
-      - name: Convert Results
-        shell: bash
-        run: |
-          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-com.example.sudoku.SudokuTest.xml"
-
-      - name: Publish Results
-        if: success()
-        run: npx github-actions-ctrf "/home/connor/Documents/SudokuResults/results.json"
+#      - name: Convert Results
+#        shell: bash
+#        run: |
+#          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-com.example.sudoku.SudokuTest.xml"
+#
+#      - name: Publish Results
+#        if: success()
+#        run: npx github-actions-ctrf "/home/connor/Documents/SudokuResults/results.json"
