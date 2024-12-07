@@ -15,11 +15,11 @@ jobs:
 #        run: |
 #          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 775 ../Sudoku
 
-#      - name: Checkout Repo
-#        uses: actions/checkout@v4
-#        with:
-#          lfs: false
-#
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
       - name: Resync Project
         shell: bash
         run: |
