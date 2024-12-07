@@ -15,6 +15,11 @@ jobs:
         with:
           lfs: false
 
+      - name: Resync Project
+        shell: bash
+        run: |
+          sudo ./gradlew build
+
       - name: Run Tests
         shell: bash
         run: |
