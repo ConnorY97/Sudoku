@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="grid_background">#05FFFFFF</color>
     <color name="cell_background">#80FFFFFF</color>
+    <color name="text_background">#80FFFFFF</color> <!-- 50% visible white -->
 </resources>
