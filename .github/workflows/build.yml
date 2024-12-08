@@ -36,6 +36,11 @@ jobs:
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S chmod 766 gradlew
 
+      - name: Clean
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew clean
+
       - name: Build APK
         shell: bash
         run: |
@@ -50,7 +55,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v3
         with:
-          name: apk
+          name: SudokuApp
           path: app/build/outputs/apk/release/Sudoku.apk
 
       # Optional: Upload to Firebase (uncomment if needed)
