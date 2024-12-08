@@ -41,12 +41,17 @@ jobs:
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew assembleRelease
 
+      - name: Rename APK to Sudoku.apk
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S mv app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/Sudoku.apk
+
       # Upload APK artifact
       - name: Upload APK artifact
         uses: actions/upload-artifact@v3
         with:
           name: apk
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/Sudoku.apk
 
       # Optional: Upload to Firebase (uncomment if needed)
       # - name: Deploy to Firebase
