@@ -79,7 +79,7 @@ jobs:
       #     release-file: app/build/outputs/apk/release/app-release.apk
 
       - name: Clean up
-        if: steps.create_prop_file == 'success'
+        if: steps.create_prop_file.outcome == 'success'
         shell: bash
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S rm local.properties

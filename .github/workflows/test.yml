@@ -56,7 +56,7 @@ jobs:
         run: npx github-actions-ctrf "/home/connor/Documents/SudokuResults/results.json"
 
       - name: Clean up
-        if: steps.crate_prop_file == 'success'
+        if: steps.create_prop_file.outcome == 'success'
         shell: bash
         run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S ./local.properties
+          echo ${{ secrets.SUDO_PASS }} | sudo -S rm local.properties
