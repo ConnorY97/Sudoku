@@ -1,0 +1,72 @@
+name: Build and Upload APK
+
+on:
+  workflow_dispatch:
+    {}
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: self-hosted  # Use the self-hosted runner
+
+    steps:
+      - name: Update Perms
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 776 ../Sudoku
+
+      - name: Setting Ownership
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chown -R connor:connor ../Sudoku
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Create Properties File
+        id: create_prop_file
+        shell: bash
+        run: |
+          echo "sdk.dir=/home/connor/Android/Sdk" >> local.properties
+
+      - name: Update gradlew Perms
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod 766 gradlew
+
+      - name: Build APK
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew assembleRelease
+
+      # Upload APK artifact
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: apk
+          path: app/build/outputs/apk/release/app-release.apk
+
+      # Optional: Upload to Firebase (uncomment if needed)
+      # - name: Deploy to Firebase
+      #   uses: wzieba/Firebase-Distribution-Github-Action@v1
+      #   with:
+      #     appId: ${{ secrets.FIREBASE_APP_ID }}
+      #     token: ${{ secrets.FIREBASE_AUTH_TOKEN }}
+      #     groups: testers_group
+      #     file: app/build/outputs/apk/release/app-release.apk
+
+      # Optional: Upload to Google Play (uncomment if needed)
+      # - name: Upload to Google Play
+      #   uses: google-github-actions/upload-play-store-release@v1
+      #   with:
+      #     service-account-json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      #     package-name: com.example.sudoku
+      #     release-file: app/build/outputs/apk/release/app-release.apk
+
+      - name: Clean up
+        if: steps.create_prop_file == 'success'
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S rm local.properties
