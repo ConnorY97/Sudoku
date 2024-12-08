@@ -30,7 +30,7 @@ class SudokuTest {
     }
 
     @Test
-    fun testGenerateFullBoard_validSudoku() {
+    fun generate_Full_Board() {
         val fullBoard = generateFullBoard()
         assertNotNull(fullBoard)
 
@@ -46,7 +46,7 @@ class SudokuTest {
     }
 
     @Test
-    fun testCreatePuzzle_emptyCellsBasedOnDifficulty() {
+    fun create_Puzzle() {
         val fullBoard = generateFullBoard()
         val difficulty = "medium" // Mock difficulty
         val puzzleBoard = createPuzzle(fullBoard, difficulty)
@@ -64,7 +64,7 @@ class SudokuTest {
 
 
     @Test
-    fun testSaveGame_puzzleSavedCorrectly() {
+    fun save_Game() {
         // Mock Context and SharedPreferences
         val context = mock(Context::class.java)
         val sharedPreferences = mock(SharedPreferences::class.java)
