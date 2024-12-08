@@ -49,7 +49,7 @@ jobs:
       - name: Rename APK to Sudoku.apk
         shell: bash
         run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S mv app\build\outputs\apk\debug\app-debug.apk app/build/outputs/apk/debug/Sudoku.apk
+          echo ${{ secrets.SUDO_PASS }} | sudo -S mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Sudoku.apk
 
       # Upload APK artifact
       - name: Upload APK artifact
