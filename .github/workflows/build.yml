@@ -9,6 +9,9 @@ jobs:
     name: Build APK
     runs-on: self-hosted  # Use the self-hosted runner
 
+    env:
+      APK_PATH: app/build/outputs/apk/debug/
+
     steps:
       - name: Update Perms
         shell: bash
@@ -49,14 +52,14 @@ jobs:
       - name: Rename APK to Sudoku.apk
         shell: bash
         run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Sudoku.apk
+          echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
 
       # Upload APK artifact
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: SudokuApp
-          path: app/build/outputs/apk/release/Sudoku.apk
+          path: ${{ env.APK_PATH }}Sudoku.apk
 
       # Optional: Upload to Firebase (uncomment if needed)
       # - name: Deploy to Firebase
