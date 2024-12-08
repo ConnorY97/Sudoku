@@ -181,7 +181,7 @@ private fun initializeGrid(
             }
 
             cell.textAlignment = EditText.TEXT_ALIGNMENT_CENTER
-            cell.setBackgroundResource(android.R.color.white)
+            cell.setBackgroundResource(R.color.cell_background)
             cell.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_NORMAL
             cell.maxLines = 1
             cell.filters = arrayOf(InputFilter.LengthFilter(1))
