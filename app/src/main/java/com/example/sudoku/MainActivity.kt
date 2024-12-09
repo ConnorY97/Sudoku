@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.InputFilter
 import android.text.InputType
 import android.view.Gravity
@@ -16,6 +17,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import kotlin.random.Random
 import com.google.gson.Gson
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +31,17 @@ class MainActivity : ComponentActivity() {
         val gridSize = 9
         var fullBoard = Array(gridSize) { IntArray(gridSize) { 0 } } // Empty 9x9 grid
         var puzzleBoard = Array(gridSize) { IntArray(gridSize) { 0 } } // Empty 9x9 grid
-        var interactableBoard = Array(gridSize) { IntArray(gridSize) { 0} } // Empty 9x9 grid
+
+//        val toolbar: Toolbar? = findViewById(R.id.toolbar)
+//        if (toolbar == null) {
+//            Log.e("MainActivity", "Toolbar is null. Check your layout XML.")
+//        } else {
+//            toolbar.title = "Sudoku"
+//            toolbar.setNavigationIcon(android.R.drawable.ic_menu_directions)
+//            toolbar.setNavigationOnClickListener {
+//                finish() // Navigate back or handle as needed
+//            }
+//        }
 
         // Get the game mode from the Intent (null check instead of empty string check)
         val gameMode = intent.getStringExtra("GAME_MODE")
@@ -46,8 +58,7 @@ class MainActivity : ComponentActivity() {
                     // Successfully loaded, initialize grid with the puzzleBoard
                     puzzleBoard = loadedPuzzleBoard
                     fullBoard = loadedFullBoard
-                    interactableBoard = loadedInteractableBoard
-                    initializeGrid(this, gridSize, puzzleBoard, interactableBoard, sudokuGrid)
+                    initializeGrid(this, gridSize, puzzleBoard, loadedInteractableBoard, sudokuGrid)
                 } else {
                     // If board loading failed, show a toast and navigate to Home
                     Toast.makeText(this, "Failed to load board, invalid name!", Toast.LENGTH_SHORT).show()
@@ -191,7 +202,7 @@ private fun initializeGrid(
             // Populate the cell based on puzzleBoard
             val number = puzzleBoard[row][col]
             if (number != 0) {
-                cell.setText(number.toString())
+                cell.setText(String.format(Locale.getDefault(), "%d", number))
             } else {
                 cell.setText("")
             }
@@ -230,8 +241,8 @@ fun checkSolutions(gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntAr
                 }
 
                 // Reset the cell's color after a slight delay
-                Handler().postDelayed({
-                    cell.setBackgroundColor(Color.WHITE) // Reset to white
+                Handler(Looper.getMainLooper()).postDelayed({
+                    cell.setBackgroundResource(R.color.cell_background)
                 }, 1000) // 1000ms (1 second) delay
             }
         }

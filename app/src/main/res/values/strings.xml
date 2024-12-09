@@ -13,4 +13,5 @@
     <string name="select_saved_game">Select Saved Game</string>
     <string name="board_name_input">Enter Board Name</string>
     <string name="confirm_save">Confirm Save</string>
+    <string name="Sudoku">Sudoku</string>
 </resources>

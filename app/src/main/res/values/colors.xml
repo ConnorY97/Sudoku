@@ -10,4 +10,5 @@
     <color name="grid_background">#05FFFFFF</color>
     <color name="cell_background">#80FFFFFF</color>
     <color name="text_background">#80FFFFFF</color> <!-- 50% visible white -->
+    <color name="color_primary">#6200EE</color>
 </resources>
