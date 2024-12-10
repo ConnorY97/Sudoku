@@ -6,11 +6,15 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
+import android.text.Editable
 import android.text.InputFilter
 import android.text.InputType
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
+import android.widget.Chronometer
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.Toast
@@ -24,6 +28,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val checkSolutionButton = findViewById<Button>(R.id.btnCheckSolution)  // Define the button
+        checkSolutionButton.visibility = View.INVISIBLE
         val saveGameButton = findViewById<Button>(R.id.btnSaveGame)
         val sudokuGrid: GridLayout = findViewById(R.id.sudokuGrid)
         val boardNameInput = findViewById<EditText>(R.id.boardNameInput)
@@ -31,17 +36,7 @@ class MainActivity : ComponentActivity() {
         val gridSize = 9
         var fullBoard = Array(gridSize) { IntArray(gridSize) { 0 } } // Empty 9x9 grid
         var puzzleBoard = Array(gridSize) { IntArray(gridSize) { 0 } } // Empty 9x9 grid
-
-//        val toolbar: Toolbar? = findViewById(R.id.toolbar)
-//        if (toolbar == null) {
-//            Log.e("MainActivity", "Toolbar is null. Check your layout XML.")
-//        } else {
-//            toolbar.title = "Sudoku"
-//            toolbar.setNavigationIcon(android.R.drawable.ic_menu_directions)
-//            toolbar.setNavigationOnClickListener {
-//                finish() // Navigate back or handle as needed
-//            }
-//        }
+        val chronometer: Chronometer = findViewById(R.id.chronometer)
 
         // Get the game mode from the Intent (null check instead of empty string check)
         val gameMode = intent.getStringExtra("GAME_MODE")
@@ -52,13 +47,16 @@ class MainActivity : ComponentActivity() {
 
             if (boardName != null) {
                 // Try loading the saved game
-                val (loadedPuzzleBoard, loadedFullBoard, loadedInteractableBoard) = loadGame(this, boardName)
+                val (boards, elapsedTime) = loadGame(this, boardName)
+                val (loadedPuzzleBoard, loadedFullBoard, loadedInteractableBoard) = boards
 
                 if (loadedPuzzleBoard != null && loadedFullBoard != null && loadedInteractableBoard != null) {
                     // Successfully loaded, initialize grid with the puzzleBoard
                     puzzleBoard = loadedPuzzleBoard
                     fullBoard = loadedFullBoard
-                    initializeGrid(this, gridSize, puzzleBoard, loadedInteractableBoard, sudokuGrid)
+                    initializeGrid(this, gridSize, puzzleBoard, loadedInteractableBoard, sudokuGrid, checkSolutionButton)
+                    chronometer.base = SystemClock.elapsedRealtime() - elapsedTime
+                    chronometer.start()
                 } else {
                     // If board loading failed, show a toast and navigate to Home
                     Toast.makeText(this, "Failed to load board, invalid name!", Toast.LENGTH_SHORT).show()
@@ -80,11 +78,15 @@ class MainActivity : ComponentActivity() {
             puzzleBoard = createPuzzle(fullBoard, difficulty) // Puzzle with empty cells
 
             // Initialize the grid with the new puzzle
-            initializeGrid(this, gridSize, puzzleBoard, sudokuGrid)
+            initializeGrid(this, gridSize, puzzleBoard, sudokuGrid, checkSolutionButton)
+
+            // Start the timer
+            chronometer.base = SystemClock.elapsedRealtime()
+            chronometer.start()
         }
 
         checkSolutionButton.setOnClickListener {
-            checkSolutions(gridSize, sudokuGrid, fullBoard)
+            checkSolutions(gridSize, sudokuGrid, fullBoard, chronometer)
         }
 
         saveGameButton.setOnClickListener {
@@ -93,6 +95,7 @@ class MainActivity : ComponentActivity() {
             sudokuGrid.visibility = View.INVISIBLE
             checkSolutionButton.visibility = View.INVISIBLE
             saveGameButton.visibility = View.INVISIBLE
+            chronometer.visibility = View.INVISIBLE
             // Show the input field and confirm button
             boardNameInput.visibility = View.VISIBLE
             confirmSaveButton.visibility = View.VISIBLE
@@ -108,7 +111,8 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(this, "Please enter a valid name.", Toast.LENGTH_SHORT).show()
             } else {
                 // Save the game with the entered board name
-                val success = saveGame(this, boardName, puzzleBoard, fullBoard, sudokuGrid)
+                val elapsedTime = SystemClock.elapsedRealtime() - chronometer.base
+                val success = saveGame(this, boardName, puzzleBoard, fullBoard, sudokuGrid, elapsedTime)
                 if (success) {
                     Toast.makeText(this, "Board saved successfully!", Toast.LENGTH_SHORT).show()
 
@@ -131,6 +135,21 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+fun areAllCellsFilled(gridSize: Int, sudokuGrid: GridLayout): Boolean {
+    for (row in 0 until gridSize) {
+        for (col in 0 until gridSize) {
+            val index = row * gridSize + col
+            val cell = sudokuGrid.getChildAt(index) as? EditText
+
+            // Check if the cell is empty
+            if (cell?.text.isNullOrEmpty()) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
 // Function to update puzzleBoard with user input from EditText grid
 private fun updatePuzzleBoard(sudokuGrid: GridLayout, puzzleBoard: Array<IntArray>) {
     for (row in 0 until 9) {
@@ -149,11 +168,12 @@ private fun updatePuzzleBoard(sudokuGrid: GridLayout, puzzleBoard: Array<IntArra
 }
 
 // Overload to initialize a new grid without an interactableBoard
-private fun initializeGrid(
+fun initializeGrid(
     context: Context,
     gridSize: Int,
     puzzleBoard: Array<IntArray>,
-    sudokuGrid: GridLayout
+    sudokuGrid: GridLayout,
+    checkSolution: Button
 ) {
     // Generate a default interactableBoard based on puzzleBoard
     val interactableBoard = Array(gridSize) { IntArray(gridSize) }
@@ -164,16 +184,17 @@ private fun initializeGrid(
     }
 
     // Call the main initializeGrid function with the generated interactableBoard
-    initializeGrid(context, gridSize, puzzleBoard, interactableBoard, sudokuGrid)
+    initializeGrid(context, gridSize, puzzleBoard, interactableBoard, sudokuGrid, checkSolution)
 }
 
 // Initialize the Sudoku grid with EditTexts, as you already did in the previous code
-private fun initializeGrid(
+fun initializeGrid(
     context: Context,
     gridSize: Int,
     puzzleBoard: Array<IntArray>,
     interactableBoard: Array<IntArray>,
-    sudokuGrid: GridLayout
+    sudokuGrid: GridLayout,
+    solutionButton: Button
 ) {
     for (row in 0 until gridSize) {
         for (col in 0 until gridSize) {
@@ -216,13 +237,29 @@ private fun initializeGrid(
                 cell.setTypeface(null, android.graphics.Typeface.BOLD)
             }
 
+            // Add a TextWatcher to monitor changes
+            cell.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    // Check if all cells are filled after each change
+                    solutionButton.visibility = if (areAllCellsFilled(gridSize, sudokuGrid)) {
+                        View.VISIBLE
+                    } else {
+                        View.GONE
+                    }
+                }
+
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            })
+
             sudokuGrid.addView(cell)
         }
     }
 }
 
 // Set the button click listener here
-fun checkSolutions(gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntArray>) {
+fun checkSolutions(gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntArray>, chronometer: Chronometer): Boolean {
+    var finished = true
     for (row in 0 until gridSize) {
         for (col in 0 until gridSize) {
             val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
@@ -238,6 +275,7 @@ fun checkSolutions(gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntAr
                     cell.setBackgroundColor(Color.GREEN)  // Correct: green
                 } else {
                     cell.setBackgroundColor(Color.RED)    // Incorrect: red
+                    finished = false
                 }
 
                 // Reset the cell's color after a slight delay
@@ -247,6 +285,11 @@ fun checkSolutions(gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntAr
             }
         }
     }
+
+    if (finished)
+        chronometer.stop()
+
+    return finished
 }
 
 // Function to generate a full Sudoku board
@@ -316,7 +359,8 @@ fun saveGame(
     boardName: String,
     puzzleBoard: Array<IntArray>,
     solvedBoard: Array<IntArray>,
-    sudokuGrid: GridLayout
+    sudokuGrid: GridLayout,
+    elapsedTime: Long
 ): Boolean {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
@@ -355,6 +399,8 @@ fun saveGame(
     editor.putString("${boardName}_solvedBoard", gson.toJson(solvedBoard))
     editor.putString("${boardName}_interactableBoard", gson.toJson(interactableBoard))
 
+    editor.putLong("${boardName}_elapsedTime", elapsedTime)
+
     // Commit the changes
     editor.apply()
 
@@ -362,7 +408,7 @@ fun saveGame(
 }
 
 
-fun loadGame(context: Context, boardName: String): Triple<Array<IntArray>?, Array<IntArray>?, Array<IntArray>?> {
+fun loadGame(context: Context, boardName: String): Pair<Triple<Array<IntArray>?, Array<IntArray>?, Array<IntArray>?>, Long> {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val gson = Gson()
 
@@ -371,9 +417,11 @@ fun loadGame(context: Context, boardName: String): Triple<Array<IntArray>?, Arra
     val solvedBoardJson = sharedPreferences.getString("${boardName}_solvedBoard", null)
     val interactableBoardJson = sharedPreferences.getString("${boardName}_interactableBoard", null)
 
+    val elapsedTime = sharedPreferences.getLong("${boardName}_elapsedTime", 0)
+
     val puzzleBoard = if (puzzleBoardJson != null) gson.fromJson(puzzleBoardJson, Array<IntArray>::class.java) else null
     val solvedBoard = if (solvedBoardJson != null) gson.fromJson(solvedBoardJson, Array<IntArray>::class.java) else null
     val interactableBoard = if (interactableBoardJson != null) gson.fromJson(interactableBoardJson, Array<IntArray>::class.java) else null
 
-    return Triple(puzzleBoard, solvedBoard, interactableBoard)
+    return Pair(Triple(puzzleBoard, solvedBoard, interactableBoard), elapsedTime)
 }

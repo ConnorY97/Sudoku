@@ -14,4 +14,6 @@
     <string name="board_name_input">Enter Board Name</string>
     <string name="confirm_save">Confirm Save</string>
     <string name="Sudoku">Sudoku</string>
+    <string name="elapsed_time">00:00</string>
+    <string name="board_name">Board Name</string>
 </resources>

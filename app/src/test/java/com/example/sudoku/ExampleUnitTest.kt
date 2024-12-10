@@ -2,6 +2,10 @@ package com.example.sudoku
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
+import android.text.Editable
+import android.text.SpannableStringBuilder
+import android.widget.EditText
 import android.widget.GridLayout
 import org.junit.Test
 
@@ -91,4 +95,72 @@ class SudokuTest {
         verify(editor).putStringSet(eq("SavedBoards"), anySet())
         verify(editor).apply()
     }
+
+//    @Test
+//    fun testCheckSolutions_correctAndIncorrectAnswers() {
+//        val gridSize = 9
+//        val difficulty = "easy"
+//
+//        // Mock GridLayout and Context
+//        val sudokuGrid = mock(GridLayout::class.java)
+//        val context = mock(Context::class.java)
+//
+//        // Generate full board and puzzle board
+//        val fullBoard = generateFullBoard()
+//        val puzzleBoard = createPuzzle(fullBoard, difficulty)
+//
+//        // Mock cells
+//        val cells = Array(gridSize * gridSize) { mock(EditText::class.java) }
+//        for (i in cells.indices) {
+//            `when`(sudokuGrid.getChildAt(i)).thenReturn(cells[i])
+//        }
+//
+//        // Initialize the grid
+//        initializeGrid(context, gridSize, puzzleBoard, sudokuGrid)
+//
+//        // Populate some cells with correct and incorrect user input
+//        val correctCellIndex = 0
+//        val incorrectCellIndex = 1
+//
+//        `when`(cells[correctCellIndex].text).thenReturn(mockEditable(fullBoard[0][0].toString())) // Correct value
+//        `when`(cells[incorrectCellIndex].text).thenReturn(mockEditable("999")) // Incorrect value
+//        `when`(cells[correctCellIndex].isFocusable).thenReturn(true)
+//        `when`(cells[incorrectCellIndex].isFocusable).thenReturn(true)
+//
+//        // Populate the grid with correct values (simulated action)
+//        populateGridWithCorrectValues(gridSize, sudokuGrid, fullBoard)
+//
+//        // Call checkSolutions to validate
+//        checkSolutions(gridSize, sudokuGrid, fullBoard)
+//
+//        // Verify the background colors of the cells
+//        verify(cells[correctCellIndex]).setBackgroundColor(Color.GREEN) // Correct answer
+//        verify(cells[incorrectCellIndex]).setBackgroundColor(Color.RED) // Incorrect answer
+//    }
+//
+//    // Helper function to mock Editable
+//    private fun mockEditable(text: String): Editable {
+//        val editable = mock(Editable::class.java)
+//        `when`(editable.toString()).thenReturn(text)
+//        return editable
+//    }
+//
+//
+//    private fun populateGridWithCorrectValues(gridSize: Int, sudokuGrid: GridLayout, fullBoard: Array<IntArray>) {
+//        for (row in 0 until gridSize) {
+//            for (col in 0 until gridSize) {
+//                // Calculate the index of the child in the GridLayout
+//                val index = row * gridSize + col
+//
+//                // Access the child view (EditText)
+//                val cell = sudokuGrid.getChildAt(index) as? EditText
+//
+//                // Populate the cell with the correct value from fullBoard
+//                if (cell != null) {
+//                    val correctValue = fullBoard[row][col]
+//                    cell.setText(correctValue.toString())
+//                }
+//            }
+//        }
+//    }
 }

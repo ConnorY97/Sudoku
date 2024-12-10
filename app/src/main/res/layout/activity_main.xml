@@ -8,6 +8,15 @@
     android:padding="16dp"
     android:background="@drawable/river_background">
 
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="@android:color/black" />
+
     <!-- Text Input for Board Name -->
     <EditText
         android:id="@+id/boardNameInput"
