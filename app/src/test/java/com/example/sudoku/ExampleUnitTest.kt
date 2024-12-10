@@ -87,7 +87,7 @@ class SudokuTest {
         val sudokuGrid = mock(GridLayout::class.java)
 
         // Call saveGame
-        val success = saveGame(context, "TestBoard", puzzleBoard, fullBoard, sudokuGrid)
+        val success = saveGame(context, "TestBoard", puzzleBoard, fullBoard, sudokuGrid, 0)
         assertTrue(success)
 
         // Verify interactions with SharedPreferences

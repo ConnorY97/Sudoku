@@ -37,7 +37,7 @@ class SudokuTest {
         val sudokuGrid = mock(GridLayout::class.java) // Mock GridLayout
 
         // Call saveGame
-        val success = saveGame(context, "TestBoard", puzzleBoard, fullBoard, sudokuGrid)
+        val success = saveGame(context, "TestBoard", puzzleBoard, fullBoard, sudokuGrid, 0)
         assertTrue(success)
     }
 }
