@@ -16,9 +16,10 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
+// Constants
+const val gridSize = 9
+
 class MainActivity : ComponentActivity() {
-    // Constants
-    private val gridSize = 9
     // Variables
     private lateinit var sudokuGrid: GridLayout
     private val editableCells: MutableSet<Pair<Int, Int>> = mutableSetOf()
@@ -131,7 +132,7 @@ class MainActivity : ComponentActivity() {
     }
 
     // Backtracking algorithm to fill the board
-    private fun fillBoard(board: Array<IntArray>): Boolean {
+    internal fun fillBoard(board: Array<IntArray>): Boolean {
         for (row in 0 until 9) {
             for (col in 0 until 9) {
                 if (board[row][col] == 0) {
@@ -171,7 +172,7 @@ class MainActivity : ComponentActivity() {
         return board
     }
 
-    private fun validateBoard(board: Array<IntArray>): Boolean {
+    internal fun validateBoard(board: Array<IntArray>): Boolean {
         val gridSize = board.size
         val subGridSize = sqrt(gridSize.toDouble()).toInt() // 3 for a 9x9 board
 
@@ -234,11 +235,6 @@ class MainActivity : ComponentActivity() {
         return true
     }
 
-    private fun validateBoard(): Boolean {
-        // Validate the current board
-        return false
-    }
-
     // Event Handlers
     private fun onCheckSolutionClicked() {
         // Handle the check solution button click
@@ -249,12 +245,6 @@ class MainActivity : ComponentActivity() {
         val minutes = (elapsedMillis / 1000) / 60
         val seconds = (elapsedMillis / 1000) % 60
         return String.format("%02d:%02d", minutes, seconds)
-    }
-
-    // Validation
-    private fun isValidMove(row: Int, col: Int, value: Int): Boolean {
-        // Validate the move against Sudoku rules
-        return false
     }
 
     // Save game state
