@@ -44,7 +44,7 @@ jobs:
       - name: Run Tests
         shell: bash
         run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew testDebugUnitTest
+          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew testExampleUnitTest
 
       - name: Convert Results
         shell: bash
