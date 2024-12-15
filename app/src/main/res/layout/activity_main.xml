@@ -46,29 +46,10 @@
         android:columnCount="9"
         android:rowCount="9" />
 
-
-    <!-- Controls -->
-    <Button
-        android:id="@+id/btnCheckSolution"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/check_solution_button"
-        android:layout_marginTop="16dp" />
-
     <Button
         android:id="@+id/btnSaveGame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/save_game"
         android:layout_marginTop="16dp" />
-
-<!--    <androidx.appcompat.widget.Toolbar-->
-<!--        android:id="@+id/toolbar"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="?attr/actionBarSize"-->
-<!--        android:background="@color/color_primary"-->
-<!--        android:elevation="4dp"-->
-<!--        android:title="@string/Sudoku"-->
-<!--        android:titleTextColor="@android:color/white" />-->
-
 </LinearLayout>
