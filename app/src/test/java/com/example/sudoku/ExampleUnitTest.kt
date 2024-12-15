@@ -8,6 +8,10 @@ import org.mockito.Mockito.mock
 class SudokuTest {
 
     @Test
+    fun sanityTest() {
+        assertTrue("Sanity Test", false)
+    }
+    @Test
     fun fillBoardTest() {
         assertTrue("Failed to successfully fill a board", fillBoard(Array(gridSize) { IntArray(gridSize) { 0 } }))
     }
