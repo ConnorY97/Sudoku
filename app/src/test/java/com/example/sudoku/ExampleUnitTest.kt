@@ -9,7 +9,7 @@ class SudokuTest {
 
     @Test
     fun sanityTest() {
-        assertTrue("Sanity Test", false)
+        assertTrue("I should be able to see this message", false)
     }
     @Test
     fun fillBoardTest() {

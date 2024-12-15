@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timezone
 import traceback
 
+
 def to_unix_timestamp(dt_str):
     """
     Converts an ISO 8601 datetime string to a Unix timestamp in seconds.
@@ -16,6 +17,7 @@ def to_unix_timestamp(dt_str):
     except Exception as e:
         print(f"Error parsing datetime '{dt_str}': {e}")
         return 0
+
 
 def convert_xml_to_json(xml_file_path, output_file_path):
     try:
@@ -29,7 +31,7 @@ def convert_xml_to_json(xml_file_path, output_file_path):
             main_suite = root
         else:
             main_suite = root.find("./testsuite")
-        
+
         if main_suite is None:
             print("Warning: No 'testsuite' element found. Available elements:")
             for elem in root:
@@ -64,13 +66,17 @@ def convert_xml_to_json(xml_file_path, output_file_path):
             test_start = start_timestamp
             test_stop = test_start + int(duration)
 
-            # Handle failure details
+            # Handle failure details (message and stack trace)
             message = None
             trace = None
             failure_element = testcase.find(".//failure")
             if failure_element is not None:
                 message = failure_element.findtext("message", "No message provided")
                 trace = failure_element.findtext("stack-trace", "No trace available")
+            else:
+                # No failure, set message and trace to None
+                message = "Test passed"
+                trace = None
 
             # Create the test entry
             test_entry = {
@@ -131,6 +137,7 @@ def convert_xml_to_json(xml_file_path, output_file_path):
 
     except Exception as e:
         print(f"Error during conversion: {e}")
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
