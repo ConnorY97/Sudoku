@@ -69,14 +69,19 @@ def convert_xml_to_json(xml_file_path, output_file_path):
             # Handle failure details (message and stack trace)
             message = None
             trace = None
+            # Handle failure details (message and stack trace)
             failure_element = testcase.find(".//failure")
             if failure_element is not None:
-                message = failure_element.findtext("message", "No message provided")
-                trace = failure_element.findtext("stack-trace", "No trace available")
+                # Extract the 'message' attribute directly
+                message = failure_element.attrib.get("message", "No message provided")
+
+                # Extract the text content of the failure element (e.g., stack trace)
+                trace = failure_element.text if failure_element.text else "No trace available"
             else:
                 # No failure, set message and trace to None
                 message = "Test passed"
                 trace = None
+
 
             # Create the test entry
             test_entry = {
