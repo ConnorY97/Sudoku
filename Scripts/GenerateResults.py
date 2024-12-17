@@ -69,18 +69,25 @@ def convert_xml_to_json(xml_file_path, output_file_path):
             # Handle failure details (message and stack trace)
             message = None
             trace = None
-            # Handle failure details (message and stack trace)
+            # Handle failure details
             failure_element = testcase.find(".//failure")
             if failure_element is not None:
-                # Extract the 'message' attribute directly
-                message = failure_element.attrib.get("message", "No message provided")
+                # Extract and clean up the 'message' attribute
+                raw_message = failure_element.attrib.get("message", "No message provided")
+                if raw_message.startswith("junit.framework.AssertionFailedError:"):
+                    message = raw_message.replace("junit.framework.AssertionFailedError:", "").strip()
+                else:
+                    message = raw_message.strip()
 
-                # Extract the text content of the failure element (e.g., stack trace)
-                trace = failure_element.text if failure_element.text else "No trace available"
+                # Extract and optionally trim the trace
+                trace = failure_element.text.strip() if failure_element.text else "No trace available"
+                trace_lines = trace.splitlines()
+                if len(trace_lines) > 5:  # Limit to the top 5 lines if trace is too long
+                    trace = "\n".join(trace_lines[:5]) + "\n... (truncated)"
             else:
-                # No failure, set message and trace to None
                 message = "Test passed"
                 trace = None
+
 
 
             # Create the test entry
