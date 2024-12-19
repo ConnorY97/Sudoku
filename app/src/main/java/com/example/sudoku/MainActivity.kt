@@ -2,13 +2,17 @@ package com.example.sudoku
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.InputFilter
 import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
+import android.widget.Chronometer
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.Toast
@@ -23,7 +27,7 @@ const val gridSize = 9
 class MainActivity : ComponentActivity() {
     // Variables
     private lateinit var sudokuGrid: GridLayout
-    private val editableCells: MutableSet<Pair<Int, Int>> = mutableSetOf()
+    private val editableCells: MutableMap<Pair<Int, Int>, Boolean> = mutableMapOf()
     private var sudokuBoard = Array(gridSize) { IntArray(gridSize) { 0 } }
 
     // Lifecycle Methods
@@ -57,7 +61,7 @@ fun initializeGrid(
     context: Context,
     sudokuGrid: GridLayout,
     board: Array<IntArray>,
-    editableCells: MutableSet<Pair<Int, Int>>) {
+    editableCells: MutableMap<Pair<Int, Int>, Boolean>) {
     Log.i("initializeGrid", "Initializing")
     // Set up the grid for Sudoku
     for (row in 0 until gridSize) {
@@ -136,7 +140,7 @@ fun initializeGrid(
 // Game Logic
 fun generatePuzzle(context: Context,
                    difficulty: String,
-                   editableCells: MutableSet<Pair<Int, Int>>):
+                   editableCells: MutableMap<Pair<Int, Int>, Boolean>):
         Array<IntArray> {
     Log.i("generatePuzzle","Started generating puzzle")
     // Generate and return a new Sudoku puzzle
@@ -193,7 +197,7 @@ fun fillBoard(board: Array<IntArray>): Boolean {
 
 fun createPuzzle(board: Array<IntArray>,
                  difficulty: String,
-                 editableCells: MutableSet<Pair<Int, Int>>):
+                 editableCells: MutableMap<Pair<Int, Int>, Boolean>):
         Array<IntArray> {
     val chanceToBeEmpty = when (difficulty) {
         "easy" -> 0.2 // 20% cells empty
@@ -206,7 +210,8 @@ fun createPuzzle(board: Array<IntArray>,
             if (Random.nextFloat() < chanceToBeEmpty) {
                 board[row][col] = 0 // Empty the cell
                 // Adding the empty cell to the editable array for future reference
-                editableCells.add(Pair(row, col))
+                editableCells[Pair(row, col)] = false // Or false based on validity
+
             }
         }
     }
