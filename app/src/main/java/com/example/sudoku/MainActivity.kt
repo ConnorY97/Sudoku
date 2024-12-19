@@ -124,6 +124,7 @@ fun initializeGrid(
                         // Check if all cells are filled
                         if(areAllCellsFilled(gridSize, sudokuGrid)) {
                             Toast.makeText(context, "Board Filled", Toast.LENGTH_SHORT).show()
+                            showCorrectCells(sudokuGrid, editableCells)
                         }
                     }
                 })
@@ -135,6 +136,33 @@ fun initializeGrid(
             sudokuGrid.addView(cell)
         }
     }
+}
+
+fun showCorrectCells(sudokuGrid: GridLayout,
+                     editableCells: MutableMap<Pair<Int, Int>, Boolean>) {
+
+    // Iterate through the map
+    for ((key, isValid) in editableCells) {
+        val (row, col) = key // Destructure the Pair to get row and column
+        val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
+        if (isValid) {
+            println("Cell ($row, $col) is valid.")
+            cell.setBackgroundColor(Color.GREEN)
+        } else {
+            println("Cell ($row, $col) is invalid.")
+            cell.setBackgroundColor(Color.RED)
+        }
+    }
+
+    // Reset cell colors after a delay
+    Handler(Looper.getMainLooper()).postDelayed({
+        for (row in 0 until gridSize) {
+            for (col in 0 until gridSize) {
+                val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
+                cell.setBackgroundResource(R.color.cell_background)
+            }
+        }
+    }, 2000) // Adjust delay as needed
 }
 
 // Game Logic
@@ -197,8 +225,7 @@ fun fillBoard(board: Array<IntArray>): Boolean {
 
 fun createPuzzle(board: Array<IntArray>,
                  difficulty: String,
-                 editableCells: MutableMap<Pair<Int, Int>, Boolean>):
-        Array<IntArray> {
+                 editableCells: MutableMap<Pair<Int, Int>, Boolean>) {
     val chanceToBeEmpty = when (difficulty) {
         "easy" -> 0.2 // 20% cells empty
         "medium" -> 0.5 // 50% cells empty
@@ -215,7 +242,6 @@ fun createPuzzle(board: Array<IntArray>,
             }
         }
     }
-    return board
 }
 
 fun validateBoard(board: Array<IntArray>): Boolean {
@@ -237,7 +263,6 @@ fun validateBoard(board: Array<IntArray>): Boolean {
             }
         }
     }
-
     return true
 }
 
