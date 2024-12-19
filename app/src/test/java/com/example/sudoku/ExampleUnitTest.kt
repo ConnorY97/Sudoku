@@ -7,10 +7,11 @@ import org.mockito.Mockito.mock
 
 class SudokuTest {
 
-    @Test
-    fun sanityTest() {
-        assertTrue("I should be able to see this message", false)
-    }
+//    @Test
+//    fun sanityTest() {
+//        assertTrue("I should be able to see this message", false)
+//    }
+
     @Test
     fun fillBoardTest() {
         assertTrue("Failed to successfully fill a board", fillBoard(Array(gridSize) { IntArray(gridSize) { 0 } }))

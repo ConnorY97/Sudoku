@@ -3,8 +3,10 @@ package com.example.sudoku
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
 import android.text.InputFilter
 import android.text.InputType
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
 import android.widget.EditText
@@ -37,6 +39,18 @@ class MainActivity : ComponentActivity() {
         sudokuGrid = findViewById(R.id.sudokuGrid)
         initializeGrid(this, sudokuGrid, sudokuBoard, editableCells)
     }
+}
+
+fun areAllCellsFilled(gridSize: Int, sudokuGrid: GridLayout): Boolean {
+    for (row in 0 until gridSize) {
+        for (col in 0 until gridSize) {
+            val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
+            if (cell.text.toString().isEmpty()) {
+                return false // Found an empty cell
+            }
+        }
+    }
+    return true // All cells are filled
 }
 
 fun initializeGrid(
@@ -83,6 +97,32 @@ fun initializeGrid(
 
             if (isEditable) {
                 cell.isFocusableInTouchMode = true
+
+                // Add TextWatcher for user input
+                cell.addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        count: Int,
+                        after: Int
+                    ) {
+                    }
+
+                    override fun onTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        before: Int,
+                        count: Int
+                    ) {
+                    }
+
+                    override fun afterTextChanged(s: Editable?) {
+                        // Check if all cells are filled
+                        if(areAllCellsFilled(gridSize, sudokuGrid)) {
+                            Toast.makeText(context, "Board Filled", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                })
             } else {
                 cell.isFocusable = false
                 cell.isClickable = false
@@ -94,7 +134,10 @@ fun initializeGrid(
 }
 
 // Game Logic
-fun generatePuzzle(context: Context, difficulty: String, editableCells: MutableSet<Pair<Int, Int>>): Array<IntArray> {
+fun generatePuzzle(context: Context,
+                   difficulty: String,
+                   editableCells: MutableSet<Pair<Int, Int>>):
+        Array<IntArray> {
     Log.i("generatePuzzle","Started generating puzzle")
     // Generate and return a new Sudoku puzzle
     var grid = Array(gridSize) { IntArray(gridSize) {0} }
@@ -233,10 +276,7 @@ fun isValidMove(board: Array<IntArray>, row: Int, col: Int, num: Int): Boolean {
     return true
 }
 
-// Event Handlers
-fun onCheckSolutionClicked() {
-    // Handle the check solution button click
-}
+
 
 // Utilityfunctions
 fun formatElapsedTime(elapsedMillis: Long): String {
