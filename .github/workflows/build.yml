@@ -62,7 +62,7 @@ jobs:
         prerelease: true
         title: "Development Build"
         files: |
-          ~/Downloads/Sudoku.apk
+          ${{ env.APK_PATH }}Sudoku.apk
 
       # - name: Clean up
       #   if: steps.create_prop_file.outcome == 'success'
