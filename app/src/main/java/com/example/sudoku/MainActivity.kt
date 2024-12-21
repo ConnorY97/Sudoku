@@ -12,11 +12,14 @@ import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
+import android.view.View
+import android.widget.Button
 import android.widget.Chronometer
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import com.google.gson.Gson
 import java.util.Locale
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -26,7 +29,6 @@ const val gridSize = 9
 
 class MainActivity : ComponentActivity() {
     // Variables
-    private lateinit var sudokuGrid: GridLayout
     private val editableCells: MutableMap<Pair<Int, Int>, Boolean> = mutableMapOf()
     private var sudokuBoard = Array(gridSize) { IntArray(gridSize) { 0 } }
 
@@ -40,9 +42,73 @@ class MainActivity : ComponentActivity() {
         sudokuBoard = generatePuzzle(this,"Easy", editableCells)
 
         Log.i("onCreate", "Initializing UI")
-        sudokuGrid = findViewById(R.id.sudokuGrid)
-        initializeGrid(this, sudokuGrid, sudokuBoard, editableCells)
+        val (sudokuGrid) =
+            setUpUI(this, sudokuBoard, editableCells)?.map { it as View } ?: throw IllegalStateException("UI setup failed")
+        if (sudokuGrid is GridLayout) {
+            Log.i("onCreate", "Successfully retrieved sudoku grid")
+            initializeGrid(this, sudokuGrid, sudokuBoard, editableCells)
+        }
+        else {
+            Log.i("onCreate", "Failed to retrieve sudoku grid")
+        }
     }
+}
+
+fun setUpUI(context: Context,
+            sudokuBoard: Array<IntArray>,
+            editableCells: MutableMap<Pair<Int, Int>, Boolean>): List<View>? {
+    if (context is Activity)
+    {
+        val confirmSaveButton = context.findViewById<Button>(R.id.confirmSaveButton)
+        val boardNameInput = context.findViewById<EditText>(R.id.boardNameInput)
+        val sudokuGrid = context.findViewById<GridLayout>(R.id.sudokuGrid)
+        val saveGameButton = context.findViewById<Button>(R.id.saveGameButton)
+
+        confirmSaveButton.setOnClickListener {
+            // Get the board name from the input field
+            val boardName = boardNameInput.text.toString().trim()
+
+            if (boardName.isEmpty()) {
+                // Show a toast if the board name is empty
+                Toast.makeText(context, "Please enter a valid name.", Toast.LENGTH_SHORT).show()
+            } else {
+                // Save the game with the entered board name
+                //val elapsedTime = SystemClock.elapsedRealtime() - chronometer.base
+                val success =
+                    saveGame(context, boardName, sudokuBoard, editableCells)
+                if (success) {
+                    Toast.makeText(context, "Board saved successfully!", Toast.LENGTH_SHORT).show()
+
+                    // Hide the input field and confirm button after saving
+                    boardNameInput.visibility = View.GONE
+                    confirmSaveButton.visibility = View.GONE
+
+                    // Hide the board while we take input
+                    sudokuGrid.visibility = View.VISIBLE
+                    saveGameButton.visibility = View.VISIBLE
+
+                    // Clear the input field for future use
+                    boardNameInput.text.clear()
+                } else {
+                    Toast.makeText(
+                        context, "Name already exists. Choose another name.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        saveGameButton.setOnClickListener {
+            // Hide the board while we take input
+            sudokuGrid.visibility = View.GONE
+            saveGameButton.visibility = View.GONE
+            //chronometer.visibility = View.INVISIBLE
+            // Show the input field and confirm button
+            boardNameInput.visibility = View.VISIBLE
+            confirmSaveButton.visibility = View.VISIBLE
+        }
+
+        return listOf(sudokuGrid)
+    }
+    return null
 }
 
 fun areAllCellsFilled(sudokuGrid: GridLayout): Boolean {
@@ -336,9 +402,34 @@ fun formatElapsedTime(elapsedMillis: Long): String {
 }
 
 // Save game state
-fun saveGameState() {
-    // Logic to save the current board
+fun saveGame(context: Context, boardName: String,
+             board: Array<IntArray>,
+             editableCells: Map<Pair<Int, Int>, Boolean>): Boolean {
+    val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
+    val editor = sharedPreferences.edit()
+
+    // Retrieve existing saved boards
+    val savedBoards = sharedPreferences.getStringSet("SavedBoards", mutableSetOf()) ?: mutableSetOf()
+
+    // Ensure unique board name
+    if (savedBoards.contains(boardName)) {
+        return false // Indicate failure
+    }
+
+    // Add new board name to saved list
+    savedBoards.add(boardName)
+    editor.putStringSet("SavedBoards", savedBoards)
+
+    // Save board and editable cells
+    val gson = Gson()
+    editor.putString("${boardName}_board", gson.toJson(board))
+    editor.putString("${boardName}_editableCells", gson.toJson(editableCells))
+
+    // Commit changes
+    editor.apply()
+    return true // Indicate success
 }
+
 
 // Load game state
 fun loadGameState() {

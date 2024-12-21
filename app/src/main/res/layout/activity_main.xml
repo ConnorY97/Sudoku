@@ -47,7 +47,7 @@
         android:rowCount="9" />
 
     <Button
-        android:id="@+id/btnSaveGame"
+        android:id="@+id/saveGameButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/save_game"
