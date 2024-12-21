@@ -54,29 +54,19 @@ jobs:
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
 
-      # Upload APK artifact
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      # # Upload APK artifact
+      # - name: Upload APK artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: SudokuApp
+      #     path: ${{ env.APK_PATH }}Sudoku.apk
+
+      # Create GitHub Release and upload APK to release
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
         with:
-          name: SudokuApp
-          path: ${{ env.APK_PATH }}Sudoku.apk
-
-      # Optional: Upload to Firebase (uncomment if needed)
-      # - name: Deploy to Firebase
-      #   uses: wzieba/Firebase-Distribution-Github-Action@v1
-      #   with:
-      #     appId: ${{ secrets.FIREBASE_APP_ID }}
-      #     token: ${{ secrets.FIREBASE_AUTH_TOKEN }}
-      #     groups: testers_group
-      #     file: app/build/outputs/apk/release/app-release.apk
-
-      # Optional: Upload to Google Play (uncomment if needed)
-      # - name: Upload to Google Play
-      #   uses: google-github-actions/upload-play-store-release@v1
-      #   with:
-      #     service-account-json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-      #     package-name: com.example.sudoku
-      #     release-file: app/build/outputs/apk/release/app-release.apk
+          files: ${{ env.APK_PATH }}Sudoku.apk
 
       - name: Clean up
         if: steps.create_prop_file.outcome == 'success'

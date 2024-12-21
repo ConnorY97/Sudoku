@@ -432,6 +432,20 @@ fun saveGame(context: Context, boardName: String,
 
 
 // Load game state
-fun loadGameState() {
-    // Logic to load the saved board
+fun loadGame(context: Context,
+             boardName: String): Pair<Array<IntArray>?,
+        Map<Pair<Int, Int>,
+                Boolean>?> {
+    val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
+    val gson = Gson()
+
+    // Load board
+    val boardJson = sharedPreferences.getString("${boardName}_board", null)
+    val board = if (boardJson != null) gson.fromJson(boardJson, Array<IntArray>::class.java) else null
+
+    // Load editable cells
+    val editableCellsJson = sharedPreferences.getString("${boardName}_editableCells", null)
+    val editableCells = if (editableCellsJson != null) gson.fromJson(editableCellsJson, Map::class.java) as Map<Pair<Int, Int>, Boolean> else null
+
+    return Pair(board, editableCells)
 }
