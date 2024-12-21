@@ -54,20 +54,23 @@ jobs:
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
 
-      # # Upload APK artifact
-      # - name: Upload APK artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: SudokuApp
-      #     path: ${{ env.APK_PATH }}Sudoku.apk
-
       # Create GitHub Release and upload APK to release
+      - name: Create GitHub Tag
+        shell: bash
+        run: |
+          VERSION=$(date +'%Y%m%d%H%M%S')  # Use timestamp as version
+          git tag -a "v$VERSION" -m "Release $VERSION"
+          git push origin "v$VERSION"
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
       - name: Create GitHub Release
         id: create_release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
         with:
           files: ${{ env.APK_PATH }}Sudoku.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: Clean up
         if: steps.create_prop_file.outcome == 'success'
