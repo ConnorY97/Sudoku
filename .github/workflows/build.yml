@@ -58,10 +58,17 @@ jobs:
         id: get_latest_tag
         shell: bash
         run: |
-          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) || echo "v1.0-alpha")
-          BASE_VERSION=$(echo $LATEST_TAG | grep -oP '(?<=v1\.)[0-9]+')
-          NEW_VERSION=$((BASE_VERSION + 1))
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          # Fetch the latest tag or set a default                                                         \
+          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v1.0-alpha")                                                                                       \
+                                                                                                          \
+          # Extract the base version number or default to 0                                               \
+          BASE_VERSION=$(echo "$LATEST_TAG" | grep -oP '(?<=v1\.)[0-9]+' || echo "0")                     \
+                                                                                                          \
+          # Increment the version number                                                                  \
+          NEW_VERSION=$((BASE_VERSION + 1))                                                               \
+                                                                                                          \
+          # Export the new version as an environment variable                                             \
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV                                                  \
 
       - name: Get Commit Message
         shell: bash
