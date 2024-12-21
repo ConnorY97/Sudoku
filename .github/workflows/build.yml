@@ -1,11 +1,8 @@
 name: Build and Create Release
 
 on:
-  # workflow_dispatch:
-  #   {}
-  push:
-    tags:
-      - "v*.*.*"
+  workflow_dispatch:
+    {}
 
 jobs:
   build:
@@ -57,13 +54,15 @@ jobs:
       #   run: |
       #     echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ~/Downloads/Sudoku.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+    - name: Create GitHub Release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          ~/Downloads/Sudoku.apk
 
       # - name: Clean up
       #   if: steps.create_prop_file.outcome == 'success'
