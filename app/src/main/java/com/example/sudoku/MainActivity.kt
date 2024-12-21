@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-fun areAllCellsFilled(gridSize: Int, sudokuGrid: GridLayout): Boolean {
+fun areAllCellsFilled(sudokuGrid: GridLayout): Boolean {
     for (row in 0 until gridSize) {
         for (col in 0 until gridSize) {
             val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
@@ -121,12 +121,33 @@ fun initializeGrid(
                     }
 
                     override fun afterTextChanged(s: Editable?) {
-                        // Check if all cells are filled
-                        if(areAllCellsFilled(gridSize, sudokuGrid)) {
-                            Toast.makeText(context, "Board Filled", Toast.LENGTH_SHORT).show()
-                            showCorrectCells(sudokuGrid, editableCells)
+                        try {
+                            // Retrieve input and convert to integer
+                            val inputText = s?.toString() ?: ""
+                            val inputNumber = inputText.toIntOrNull() ?: 0 // Default to 0 for invalid input
+
+                            // Update the board with user input
+                            board[row][col] = inputNumber
+
+                            // Validate the board
+                            val isValid = validateBoard(board)
+                            Log.i("initializeGrid", "Cell ($row, $col) validation result: $isValid")
+
+                            // Update the editableCells map with validation status
+                            editableCells[Pair(row, col)] = isValid
+
+                            // Check if all cells are filled
+                            if (areAllCellsFilled(sudokuGrid)) {
+                                Toast.makeText(context, "Board Filled", Toast.LENGTH_SHORT).show()
+
+                                // Provide visual feedback for valid and invalid cells
+                                showCorrectCells(sudokuGrid, editableCells)
+                            }
+                        } catch (e: Exception) {
+                            Log.e("initializeGrid", "Error updating cell ($row, $col): ${e.message}")
                         }
                     }
+
                 })
             } else {
                 cell.isFocusable = false
@@ -245,7 +266,6 @@ fun createPuzzle(board: Array<IntArray>,
 }
 
 fun validateBoard(board: Array<IntArray>): Boolean {
-    val gridSize = board.size
     val subGridSize = sqrt(gridSize.toDouble()).toInt() // 3 for a 9x9 board
 
     // Validate rows and columns
