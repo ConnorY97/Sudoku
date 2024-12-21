@@ -54,18 +54,33 @@ jobs:
       #   run: |
       #     echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
 
-    - name: Create GitHub Release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.TOKEN }}"
-        automatic_release_tag: "latest"
-        prerelease: true
-        title: "Development Build"
-        files: |
-          ${{ env.APK_PATH }}Sudoku.apk
+      - name: Get Latest Tag
+        id: get_latest_tag
+        shell: bash
+        run: |
+          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) || echo "v1.0-alpha")
+          BASE_VERSION=$(echo $LATEST_TAG | grep -oP '(?<=v1\.)[0-9]+')
+          NEW_VERSION=$((BASE_VERSION + 1))
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-      # - name: Clean up
-      #   if: steps.create_prop_file.outcome == 'success'
-      #   shell: bash
-      #   run: |
-      #     echo ${{ secrets.SUDO_PASS }} | sudo -S rm local.properties
+      - name: Get Commit Message
+        shell: bash
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "COMMIT_MSG=$COMMIT_MSG" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.TOKEN }}"
+          automatic_release_tag: "v1.${{ env.NEW_VERSION }}-alpha"
+          prerelease: true
+          title: "${{ env.COMMIT_MSG }}"
+          files: |
+            ${{ env.APK_PATH }}Sudoku.apk
+
+        # - name: Clean up
+        #   if: steps.create_prop_file.outcome == 'success'
+        #   shell: bash
+        #   run: |
+        #     echo ${{ secrets.SUDO_PASS }} | sudo -S rm local.properties
