@@ -1,4 +1,4 @@
-name: Build and Upload APK
+name: Build and Create Release
 
 on:
   workflow_dispatch:
@@ -60,6 +60,13 @@ jobs:
       #   with:
       #     name: SudokuApp
       #     path: ${{ env.APK_PATH }}Sudoku.apk
+
+      - name: Create GitHub Tag
+        shell: bash
+        run: |
+          VERSION=$(date +'%Y%m%d%H%M%S')  # Use timestamp as version
+          git tag -a "v$VERSION" -m "Release $VERSION"
+          git push origin "v$VERSION"
 
       # Create GitHub Release and upload APK to release
       - name: Create GitHub Release
