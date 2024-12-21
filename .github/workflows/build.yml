@@ -1,8 +1,11 @@
 name: Build and Create Release
 
 on:
-  workflow_dispatch:
-    {}
+  # workflow_dispatch:
+  #   {}
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   build:
@@ -13,67 +16,57 @@ jobs:
       APK_PATH: app/build/outputs/apk/debug/
 
     steps:
-      - name: Update Perms
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 776 ../Sudoku
+      # - name: Update Perms
+      #   shell: bash
+      #   run: |
+      #     echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 776 ../Sudoku
 
-      - name: Setting Ownership
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S chown -R connor:connor ../Sudoku
+      # - name: Setting Ownership
+      #   shell: bash
+      #   run: |
+      #     echo ${{ secrets.SUDO_PASS }} | sudo -S chown -R connor:connor ../Sudoku
 
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-        with:
-          lfs: false
+      # - name: Checkout Repo
+      #   uses: actions/checkout@v4
+      #   with:
+      #     lfs: false
 
-      - name: Create Properties File
-        id: create_prop_file
-        shell: bash
-        run: |
-          echo "sdk.dir=/home/connor/Android/Sdk" >> local.properties
+      # - name: Create Properties File
+      #   id: create_prop_file
+      #   shell: bash
+      #   run: |
+      #     echo "sdk.dir=/home/connor/Android/Sdk" >> local.properties
 
-      - name: Update gradlew Perms
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod 766 gradlew
+      # - name: Update gradlew Perms
+      #   shell: bash
+      #   run: |
+      #     echo ${{ secrets.SUDO_PASS }} | sudo -S chmod 766 gradlew
 
-      - name: Clean
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew clean
+      # - name: Clean
+      #   shell: bash
+      #   run: |
+      #     echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew clean
 
-      - name: Build APK
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew assembleDebug
+      # - name: Build APK
+      #   shell: bash
+      #   run: |
+      #     echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew assembleDebug
 
-      - name: Rename APK to Sudoku.apk
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
-
-      # Create GitHub Release and upload APK to release
-      - name: Create GitHub Tag
-        shell: bash
-        run: |
-          VERSION=$(date +'%Y%m%d%H%M%S')  # Use timestamp as version
-          git tag -a "v$VERSION" -m "Release $VERSION"
-          git push origin "v$VERSION"
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      # - name: Rename APK to Sudoku.apk
+      #   shell: bash
+      #   run: |
+      #     echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
 
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ env.APK_PATH }}Sudoku.apk
+          files: ~/Downloads/Sudoku.apk
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
-      - name: Clean up
-        if: steps.create_prop_file.outcome == 'success'
-        shell: bash
-        run: |
-          echo ${{ secrets.SUDO_PASS }} | sudo -S rm local.properties
+      # - name: Clean up
+      #   if: steps.create_prop_file.outcome == 'success'
+      #   shell: bash
+      #   run: |
+      #     echo ${{ secrets.SUDO_PASS }} | sudo -S rm local.properties
