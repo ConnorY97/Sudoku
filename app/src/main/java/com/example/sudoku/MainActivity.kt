@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.text.Editable
 import android.text.InputFilter
 import android.text.InputType
@@ -42,14 +43,14 @@ class MainActivity : ComponentActivity() {
         sudokuBoard = generatePuzzle(this,"Easy", editableCells)
 
         Log.i("onCreate", "Initializing UI")
-        val (sudokuGrid) =
+        val (sudokuGrid, timer) =
             setUpUI(this, sudokuBoard, editableCells)?.map { it as View } ?: throw IllegalStateException("UI setup failed")
-        if (sudokuGrid is GridLayout) {
-            Log.i("onCreate", "Successfully retrieved sudoku grid")
-            initializeGrid(this, sudokuGrid, sudokuBoard, editableCells)
+        if (sudokuGrid is GridLayout && timer is Chronometer) {
+            Log.i("onCreate", "Successfully retrieved sudoku grid and timer")
+            initializeGrid(this, sudokuGrid, sudokuBoard, editableCells, timer)
         }
         else {
-            Log.i("onCreate", "Failed to retrieve sudoku grid")
+            Log.i("onCreate", "Failed to retrieve sudoku grid or timer")
         }
     }
 }
@@ -59,10 +60,21 @@ fun setUpUI(context: Context,
             editableCells: MutableMap<Pair<Int, Int>, Boolean>): List<View>? {
     if (context is Activity)
     {
+        // Buttons
         val confirmSaveButton = context.findViewById<Button>(R.id.confirmSaveButton)
         val boardNameInput = context.findViewById<EditText>(R.id.boardNameInput)
         val sudokuGrid = context.findViewById<GridLayout>(R.id.sudokuGrid)
         val saveGameButton = context.findViewById<Button>(R.id.saveGameButton)
+        Log.i("setUpUI", "Buttons created")
+
+        // Timer
+        val timer: Chronometer = context.findViewById(R.id.chronometer)
+        Log.i("setUpUI", "Timer created")
+
+        // Start the timer
+        timer.base = SystemClock.elapsedRealtime()
+        timer.start()
+        Log.i("setUpUI", "Timer Started")
 
         confirmSaveButton.setOnClickListener {
             // Get the board name from the input field
@@ -106,7 +118,7 @@ fun setUpUI(context: Context,
             confirmSaveButton.visibility = View.VISIBLE
         }
 
-        return listOf(sudokuGrid)
+        return listOf(sudokuGrid, timer)
     }
     return null
 }
@@ -127,7 +139,8 @@ fun initializeGrid(
     context: Context,
     sudokuGrid: GridLayout,
     board: Array<IntArray>,
-    editableCells: MutableMap<Pair<Int, Int>, Boolean>) {
+    editableCells: MutableMap<Pair<Int, Int>, Boolean>,
+    timer: Chronometer) {
     Log.i("initializeGrid", "Initializing")
     // Set up the grid for Sudoku
     for (row in 0 until gridSize) {
@@ -207,7 +220,10 @@ fun initializeGrid(
                                 Toast.makeText(context, "Board Filled", Toast.LENGTH_SHORT).show()
 
                                 // Provide visual feedback for valid and invalid cells
-                                showCorrectCells(sudokuGrid, editableCells)
+                                val finished = showCorrectCells(sudokuGrid, editableCells)
+                                if (finished) {
+                                    timer.stop()
+                                }
                             }
                         } catch (e: Exception) {
                             Log.e("initializeGrid", "Error updating cell ($row, $col): ${e.message}")
@@ -226,8 +242,8 @@ fun initializeGrid(
 }
 
 fun showCorrectCells(sudokuGrid: GridLayout,
-                     editableCells: MutableMap<Pair<Int, Int>, Boolean>) {
-
+                     editableCells: MutableMap<Pair<Int, Int>, Boolean>): Boolean {
+    var allCellsCorrect = true
     // Iterate through the map
     for ((key, isValid) in editableCells) {
         val (row, col) = key // Destructure the Pair to get row and column
@@ -238,6 +254,7 @@ fun showCorrectCells(sudokuGrid: GridLayout,
         } else {
             println("Cell ($row, $col) is invalid.")
             cell.setBackgroundColor(Color.RED)
+            allCellsCorrect = false
         }
     }
 
@@ -250,6 +267,7 @@ fun showCorrectCells(sudokuGrid: GridLayout,
             }
         }
     }, 2000) // Adjust delay as needed
+    return allCellsCorrect
 }
 
 // Game Logic
