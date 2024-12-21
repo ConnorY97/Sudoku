@@ -13,46 +13,46 @@ jobs:
       APK_PATH: app/build/outputs/apk/debug/
 
     steps:
-      # - name: Update Perms
-      #   shell: bash
-      #   run: |
-      #     echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 776 ../Sudoku
+      - name: Update Perms
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod -R 776 ../Sudoku
 
-      # - name: Setting Ownership
-      #   shell: bash
-      #   run: |
-      #     echo ${{ secrets.SUDO_PASS }} | sudo -S chown -R connor:connor ../Sudoku
+      - name: Setting Ownership
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chown -R connor:connor ../Sudoku
 
-      # - name: Checkout Repo
-      #   uses: actions/checkout@v4
-      #   with:
-      #     lfs: false
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          lfs: false
 
-      # - name: Create Properties File
-      #   id: create_prop_file
-      #   shell: bash
-      #   run: |
-      #     echo "sdk.dir=/home/connor/Android/Sdk" >> local.properties
+      - name: Create Properties File
+        id: create_prop_file
+        shell: bash
+        run: |
+          echo "sdk.dir=/home/connor/Android/Sdk" >> local.properties
 
-      # - name: Update gradlew Perms
-      #   shell: bash
-      #   run: |
-      #     echo ${{ secrets.SUDO_PASS }} | sudo -S chmod 766 gradlew
+      - name: Update gradlew Perms
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S chmod 766 gradlew
 
-      # - name: Clean
-      #   shell: bash
-      #   run: |
-      #     echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew clean
+      - name: Clean
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew clean
 
-      # - name: Build APK
-      #   shell: bash
-      #   run: |
-      #     echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew assembleDebug
+      - name: Build APK
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew assembleDebug
 
-      # - name: Rename APK to Sudoku.apk
-      #   shell: bash
-      #   run: |
-      #     echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
+      - name: Rename APK to Sudoku.apk
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
 
       - name: Get Latest Tag
         id: get_latest_tag
@@ -86,8 +86,8 @@ jobs:
           files: |
             ${{ env.APK_PATH }}Sudoku.apk
 
-        # - name: Clean up
-        #   if: steps.create_prop_file.outcome == 'success'
-        #   shell: bash
-        #   run: |
-        #     echo ${{ secrets.SUDO_PASS }} | sudo -S rm local.properties
+      - name: Clean up
+        if: steps.create_prop_file.outcome == 'success'
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S rm local.properties
