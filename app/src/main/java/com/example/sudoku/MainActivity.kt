@@ -210,10 +210,9 @@ fun initializeGrid(
 
                             // Validate the board
                             val isValid = validateBoard(board)
-                            Log.i("initializeGrid", "Cell ($row, $col) validation result: $isValid")
 
-                            // Update the editableCells map with validation status
-                            editableCells[Pair(row, col)] = isValid
+                            // Validate the editableCells
+                            confirmEditableCells(editableCells, board)
 
                             // Check if all cells are filled
                             if (areAllCellsFilled(sudokuGrid)) {
@@ -242,7 +241,8 @@ fun initializeGrid(
 }
 
 fun showCorrectCells(sudokuGrid: GridLayout,
-                     editableCells: MutableMap<Pair<Int, Int>, Boolean>): Boolean {
+                     editableCells: MutableMap<Pair<Int, Int>, Boolean>):
+        Boolean {
     var allCellsCorrect = true
     // Iterate through the map
     for ((key, isValid) in editableCells) {
@@ -397,6 +397,13 @@ fun getSubGrid(board: Array<IntArray>, startRow: Int, startCol: Int, size: Int):
     return subGrid.toIntArray()
 }
 
+// Helper to find the start row and column of a sub-grid
+fun findSubGridStart(row: Int, col: Int, subGridSize: Int): Pair<Int, Int> {
+    val startRow = (row / subGridSize) * subGridSize
+    val startCol = (col / subGridSize) * subGridSize
+    return Pair(startRow, startCol)
+}
+
 // Check if placing a number is valid
 fun isValidMove(board: Array<IntArray>, row: Int, col: Int, num: Int): Boolean {
     for (i in 0 until 9) {
@@ -410,7 +417,35 @@ fun isValidMove(board: Array<IntArray>, row: Int, col: Int, num: Int): Boolean {
     return true
 }
 
+fun confirmEditableCells(editableCells: MutableMap<Pair<Int, Int>, Boolean>,
+                         board: Array<IntArray>) {
+    val subGridSize = sqrt(gridSize.toDouble()).toInt() // 3 for a 9x9 board
+    for ((cell, isValid) in editableCells) {
+        val row = cell.first
+        val col = cell.second
 
+        val (startRow, startCol) = findSubGridStart(row,col, subGridSize)
+
+        // Is the column valid
+        if (!isUnique(getColumn(board, col))) {
+            Log.i("confirmEditableCells", "Column $col is invalid")
+            editableCells[Pair(row, col)] = false
+        }
+        // is the row valid
+        else if (!isUnique(getColumn(board, row))) {
+            Log.i("confirmEditableCells", "Row $row is invalid")
+            editableCells[Pair(row, col)] = false
+        }
+        else if (!isUnique(getSubGrid(board, startRow, startCol, subGridSize))) {
+            Log.i("confirmEditableCells", "Subgrid $startRow $startCol is invalid")
+            editableCells[Pair(row, col)] = false
+        }
+        else {
+            Log.i("confirmEditableCells", "Cell $row $col is valid!")
+            editableCells[Pair(row, col)] = true
+        }
+    }
+}
 
 // Utilityfunctions
 fun formatElapsedTime(elapsedMillis: Long): String {
