@@ -440,17 +440,32 @@ fun isValidMove(board: Array<IntArray>, row: Int, col: Int, num: Int): Boolean {
     return true
 }
 
-// Helper to find duplicate positions in an array
-fun findDuplicatePositions(array: IntArray): Set<Int> {
-    val seen = mutableSetOf<Int>()
-    val duplicates = mutableSetOf<Int>()
+// Helper to find all duplicate positions in an array
+fun findDuplicatePositions(array: IntArray): Set<Pair<Int, Int>> {
+    val seen = mutableMapOf<Int, MutableList<Int>>() // Map to store positions of each number
+    val duplicates = mutableSetOf<Pair<Int, Int>>() // Set to store duplicate positions
+
     array.forEachIndexed { index, num ->
-        if (num != 0) {
-            if (!seen.add(num)) {
-                duplicates.add(index)
+        if (num != 0) { // Ignore zero values (empty cells)
+            if (seen.containsKey(num)) {
+                seen[num]?.add(index) // Add this index to the list of positions for this number
+            } else {
+                seen[num] = mutableListOf(index) // Initialize a list with the current index
             }
         }
     }
+
+    // Iterate through the map and add all duplicates (more than one occurrence of a number)
+    seen.forEach { (num, positions) ->
+        if (positions.size > 1) {
+            positions.forEach { pos ->
+                val row = pos / 9 // Calculate row from index
+                val col = pos % 9 // Calculate column from index
+                duplicates.add(Pair(row, col)) // Add to duplicates set
+            }
+        }
+    }
+
     return duplicates
 }
 
@@ -460,35 +475,36 @@ fun confirmEditableCells(
 ): Set<Pair<Int, Int>> {
     val subGridSize = sqrt(board.size.toDouble()).toInt() // Calculate sub-grid size (e.g., 3 for 9x9)
 
-    // Create a map to track problematic cells
+    // Create a set to track problematic cells
     val problematicCells = mutableSetOf<Pair<Int, Int>>()
 
-    // Check rows
+    // Check rows for duplicates
     for (row in board.indices) {
         val duplicates = findDuplicatePositions(board[row])
-        duplicates.forEach { col ->
-            problematicCells.add(Pair(row, col))
+        duplicates.forEach { problemCell ->
+            problematicCells.add(problemCell) // Add problematic cell to the set
         }
     }
 
-    // Check columns
+    // Check columns for duplicates
     for (col in board.indices) {
         val column = getColumn(board, col)
         val duplicates = findDuplicatePositions(column)
-        duplicates.forEach { row ->
-            problematicCells.add(Pair(row, col))
+        duplicates.forEach { problemCell ->
+            problematicCells.add(problemCell) // Add problematic cell to the set
         }
     }
 
-    // Check sub-grids
+    // Check sub-grids for duplicates
     for (startRow in 0 until board.size step subGridSize) {
         for (startCol in 0 until board.size step subGridSize) {
             val subGrid = getSubGrid(board, startRow, startCol, subGridSize)
             val duplicates = findDuplicatePositions(subGrid)
             duplicates.forEach { index ->
-                val row = startRow + index / subGridSize
-                val col = startCol + index % subGridSize
-                problematicCells.add(Pair(row, col))
+                // Ensure index and subGridSize are Int
+                val row = startRow + index.first / subGridSize // Explicitly cast index to Int if necessary
+                val col = startCol + index.second % subGridSize // Same for column
+                problematicCells.add(Pair(row, col)) // Add problematic cell to the set
             }
         }
     }
@@ -499,11 +515,12 @@ fun confirmEditableCells(
             val isEditable = editableCells.containsKey(Pair(row, col))
             val isValid = !problematicCells.contains(Pair(row, col))
             if (isEditable) {
-                editableCells[Pair(row, col)] = isValid
+                editableCells[Pair(row, col)] = isValid // Update validity for editable cells
             }
         }
     }
 
+    // Return the set of problematic cells
     return problematicCells
 }
 
