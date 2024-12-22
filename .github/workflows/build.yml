@@ -66,12 +66,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "${{ env.COMMIT_MSG }}"
-          body_path: ./Scripts/revision.txt
+          body_path: "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/Scripts"
           body: "Continued work on development"
           draft: false
           prerelease: true
           files:
-            ${{ env.APK_PATH }}app-debug.apk
+            ${{ env.APK_PATH }}Sudoku.apk
 
       - name: Clean up
         if: steps.create_prop_file.outcome == 'success'
