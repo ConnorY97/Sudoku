@@ -57,7 +57,8 @@ class MainActivity : ComponentActivity() {
 
 fun setUpUI(context: Context,
             sudokuBoard: Array<IntArray>,
-            editableCells: MutableMap<Pair<Int, Int>, Boolean>): List<View>? {
+            editableCells: MutableMap<Pair<Int, Int>, Boolean>
+): List<View>? {
     if (context is Activity)
     {
         // Buttons
@@ -123,7 +124,8 @@ fun setUpUI(context: Context,
     return null
 }
 
-fun areAllCellsFilled(sudokuGrid: GridLayout): Boolean {
+fun areAllCellsFilled(sudokuGrid: GridLayout
+): Boolean {
     for (row in 0 until gridSize) {
         for (col in 0 until gridSize) {
             val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
@@ -140,7 +142,8 @@ fun initializeGrid(
     sudokuGrid: GridLayout,
     board: Array<IntArray>,
     editableCells: MutableMap<Pair<Int, Int>, Boolean>,
-    timer: Chronometer) {
+    timer: Chronometer
+) {
     Log.i("initializeGrid", "Initializing")
     // Set up the grid for Sudoku
     for (row in 0 until gridSize) {
@@ -280,8 +283,8 @@ fun showCorrectCells(
 // Game Logic
 fun generatePuzzle(context: Context,
                    difficulty: String,
-                   editableCells: MutableMap<Pair<Int, Int>, Boolean>):
-        Array<IntArray> {
+                   editableCells: MutableMap<Pair<Int, Int>, Boolean>
+): Array<IntArray> {
     Log.i("generatePuzzle","Started generating puzzle")
     // Generate and return a new Sudoku puzzle
     var grid = Array(gridSize) { IntArray(gridSize) {0} }
@@ -314,7 +317,8 @@ fun generatePuzzle(context: Context,
     return grid
 }
 
-fun logBoard(board: Array<IntArray>) {
+fun logBoard(board: Array<IntArray>
+) {
     val boardString = StringBuilder()
     for (row in board) {
         for (col in row) {
@@ -325,7 +329,8 @@ fun logBoard(board: Array<IntArray>) {
     Log.i("logBoard", boardString.toString())
 }
 
-fun fillBoard(board: Array<IntArray>): Boolean {
+fun fillBoard(board: Array<IntArray>
+): Boolean {
     for (row in 0 until 9) {
         for (col in 0 until 9) {
             if (board[row][col] == 0) {
@@ -350,7 +355,8 @@ fun fillBoard(board: Array<IntArray>): Boolean {
 
 fun createPuzzle(board: Array<IntArray>,
                  difficulty: String,
-                 editableCells: MutableMap<Pair<Int, Int>, Boolean>) {
+                 editableCells: MutableMap<Pair<Int, Int>, Boolean>
+) {
     val chanceToBeEmpty = when (difficulty) {
         "easy" -> 0.1 // 20% cells empty
         "medium" -> 0.5 // 50% cells empty
@@ -369,7 +375,8 @@ fun createPuzzle(board: Array<IntArray>,
     }
 }
 
-fun validateBoard(board: Array<IntArray>): Boolean {
+fun validateBoard(board: Array<IntArray>
+): Boolean {
     val subGridSize = sqrt(gridSize.toDouble()).toInt() // 3 for a 9x9 board
 
     // Validate rows and columns
@@ -391,7 +398,8 @@ fun validateBoard(board: Array<IntArray>): Boolean {
 }
 
 // Helper to check if all numbers in an array are unique (ignores zeros)
-fun isUnique(array: IntArray): Boolean {
+fun isUnique(array: IntArray
+): Boolean {
     val seen = mutableSetOf<Int>()
     for (num in array) {
         if (num != 0 && !seen.add(num)) {
@@ -402,12 +410,16 @@ fun isUnique(array: IntArray): Boolean {
 }
 
 // Helper to get a column as an array
-fun getColumn(board: Array<IntArray>, col: Int): IntArray {
+fun getColumn(board: Array<IntArray>, col: Int
+): IntArray {
     return IntArray(board.size) { row -> board[row][col] }
 }
 
 // Helper to get a sub-grid as an array
-fun getSubGrid(board: Array<IntArray>, startRow: Int, startCol: Int, size: Int): IntArray {
+fun getSubGrid(board: Array<IntArray>,
+               startRow: Int,
+               startCol: Int, size: Int
+): IntArray {
     val subGrid = mutableListOf<Int>()
     for (row in startRow until startRow + size) {
         for (col in startCol until startCol + size) {
@@ -418,14 +430,21 @@ fun getSubGrid(board: Array<IntArray>, startRow: Int, startCol: Int, size: Int):
 }
 
 // Helper to find the start row and column of a sub-grid
-fun findSubGridStart(row: Int, col: Int, subGridSize: Int): Pair<Int, Int> {
+fun findSubGridStart(row: Int,
+                     col: Int,
+                     subGridSize: Int
+): Pair<Int, Int> {
     val startRow = (row / subGridSize) * subGridSize
     val startCol = (col / subGridSize) * subGridSize
     return Pair(startRow, startCol)
 }
 
 // Check if placing a number is valid
-fun isValidMove(board: Array<IntArray>, row: Int, col: Int, num: Int): Boolean {
+fun isValidMove(board: Array<IntArray>,
+                row: Int,
+                col: Int,
+                num: Int
+): Boolean {
     for (i in 0 until 9) {
         if (board[row][i] == num || board[i][col] == num) {
             return false // Row or column conflict
@@ -437,7 +456,9 @@ fun isValidMove(board: Array<IntArray>, row: Int, col: Int, num: Int): Boolean {
     return true
 }
 
-fun findDuplicatePositionInRow(row: Int, array: IntArray): Set<Pair<Int, Int>> {
+fun findDuplicatePositionInRow(row: Int,
+                               array: IntArray
+): Set<Pair<Int, Int>> {
     val seen = mutableMapOf<Int, MutableList<Pair<Int, Int>>>() // Map to store positions of each number
     val duplicates = mutableSetOf<Pair<Int, Int>>() // Set to store duplicate positions
 
@@ -463,7 +484,9 @@ fun findDuplicatePositionInRow(row: Int, array: IntArray): Set<Pair<Int, Int>> {
     return duplicates
 }
 
-fun findDuplicatePositionInCol(col: Int, array: IntArray): Set<Pair<Int, Int>> {
+fun findDuplicatePositionInCol(col: Int,
+                               array: IntArray
+): Set<Pair<Int, Int>> {
     val seen = mutableMapOf<Int, MutableList<Pair<Int, Int>>>() // Map to store positions of each number
     val duplicates = mutableSetOf<Pair<Int, Int>>() // Set to store duplicate positions
 
@@ -489,34 +512,35 @@ fun findDuplicatePositionInCol(col: Int, array: IntArray): Set<Pair<Int, Int>> {
     return duplicates
 }
 
-// Helper to find all duplicate positions in an array
-fun findDuplicatePositions(array: IntArray): Set<Pair<Int, Int>> {
-    val seen = mutableMapOf<Int, MutableList<Int>>() // Map to store positions of each number
-    val duplicates = mutableSetOf<Pair<Int, Int>>() // Set to store duplicate positions
-
-    array.forEachIndexed { index, num ->
-        if (num != 0) { // Ignore zero values (empty cells)
-            if (seen.containsKey(num)) {
-                seen[num]?.add(index) // Add this index to the list of positions for this number
-            } else {
-                seen[num] = mutableListOf(index) // Initialize a list with the current index
-            }
-        }
-    }
-
-    // Iterate through the map and add all duplicates (more than one occurrence of a number)
-    seen.forEach { (num, positions) ->
-        if (positions.size > 1) {
-            positions.forEach { pos ->
-                val row = pos / 9 // Calculate row from index
-                val col = pos % 9 // Calculate column from index
-                duplicates.add(Pair(row, col)) // Add to duplicates set
-            }
-        }
-    }
-
-    return duplicates
-}
+//fun findDuplicatePositionInSubGrid(
+//    startRow: Int,
+//    startCol: Int,
+//    array: IntArray
+//): Set<Pair<Int, Int>> {
+//    val seen = mutableMapOf<Int, MutableList<Pair<Int, Int>>>() // Map to store positions of each number
+//    val duplicates = mutableSetOf<Pair<Int, Int>>() // Set to store duplicate positions
+//
+//    array.forEachIndexed { index, num ->
+//        if (num != 0) { // Ignore zero values (empty cells)
+//            if (seen.containsKey(num)) {
+//                seen[num]?.add(Pair(index, col)) // Add this index to the list of positions for this number
+//            } else {
+//                seen[num] = mutableListOf(Pair(index, col)) // Initialize a list with the current index
+//            }
+//        }
+//    }
+//
+//    // Iterate through the map and add all duplicates (more than one occurrence of a number)
+//    seen.forEach { (num, positions) ->
+//        if (positions.size > 1) {
+//            positions.forEach { pos ->
+//                duplicates.add(pos)// Add to duplicates set
+//            }
+//        }
+//    }
+//
+//    return duplicates
+//}
 
 fun confirmEditableCells(
     editableCells: MutableMap<Pair<Int, Int>, Boolean>,
@@ -544,17 +568,10 @@ fun confirmEditableCells(
         }
     }
 
-//    // Check sub-grids for duplicates
-//    for (startRow in 0 until board.size step subGridSize) {
-//        for (startCol in 0 until board.size step subGridSize) {
-//            val subGrid = getSubGrid(board, startRow, startCol, subGridSize)
-//            val duplicates = findDuplicatePositions(subGrid)
-//            duplicates.forEach { index ->
-//                // Ensure index and subGridSize are Int
-//                val row = startRow + index.first / subGridSize // Explicitly cast index to Int if necessary
-//                val col = startCol + index.second % subGridSize // Same for column
-//                problematicCells.add(Pair(row, col)) // Add problematic cell to the set
-//            }
+//    // Check the sub grids
+//    for (row in 0 until gridSize step 3) {
+//        for (col in 0 until gridSize step 3) {
+//            val duplicates = findDuplicatePositionInSubGrid(row, col, getSubGrid(board, row, col, subGridSize))
 //        }
 //    }
 
@@ -575,7 +592,8 @@ fun confirmEditableCells(
 
 
 // Utilityfunctions
-fun formatElapsedTime(elapsedMillis: Long): String {
+fun formatElapsedTime(elapsedMillis: Long
+): String {
     val minutes = (elapsedMillis / 1000) / 60
     val seconds = (elapsedMillis / 1000) % 60
     return String.format("%02d:%02d", minutes, seconds)
@@ -584,7 +602,8 @@ fun formatElapsedTime(elapsedMillis: Long): String {
 // Save game state
 fun saveGame(context: Context, boardName: String,
              board: Array<IntArray>,
-             editableCells: Map<Pair<Int, Int>, Boolean>): Boolean {
+             editableCells: Map<Pair<Int, Int>, Boolean>
+): Boolean {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
 
@@ -613,7 +632,8 @@ fun saveGame(context: Context, boardName: String,
 
 // Load game state
 fun loadGame(context: Context,
-             boardName: String): Pair<Array<IntArray>?,
+             boardName: String
+): Pair<Array<IntArray>?,
         Map<Pair<Int, Int>,
                 Boolean>?> {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)

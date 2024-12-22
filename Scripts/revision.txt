@@ -1,7 +1,8 @@
+Sudoku revisions
+
 **Fixes**
-- Fixed dynamic solution checker
+
 
 **To Do**
-- Add checking sub grids to solution checker
-
-Touching this so it gets updated in the runner
+- Add checking sub grids to solution checker.
+- Add dynamic back grounds and the option to have a solid background.
