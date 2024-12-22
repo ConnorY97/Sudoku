@@ -1,8 +1,9 @@
 name: Build and Create Release
 
 on:
-  workflow_dispatch:
-    {}
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   build:
@@ -54,40 +55,22 @@ jobs:
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
 
-      - name: Get Latest Tag
-        id: get_latest_tag
-        shell: bash
-        run: |
-          # Fetch the latest tag or set a default
-          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v1.0-alpha")
-
-          # Extract the numeric portion (e.g., the '1' in 'v1.1-alpha')
-          BASE_VERSION=$(echo "$LATEST_TAG" | awk -F'[v.-]' '{print $3}' || echo "0")
-
-          # Increment the version
-          NEW_VERSION=$((BASE_VERSION + 1))
-
-          # Construct the new tag
-          NEW_TAG="v1.${NEW_VERSION}-alpha"
-
-          # Export the new tag as an environment variable
-          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
-
       - name: Get Commit Message
         shell: bash
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
           echo "COMMIT_MSG=$COMMIT_MSG" >> $GITHUB_ENV
 
-      - name: Create GitHub Release
-        uses: "marvinpinto/action-automatic-releases@latest"
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          repo_token: "${{ secrets.TOKEN }}"
-          automatic_release_tag: "v1.${{ env.NEW_VERSION }}-alpha"
+          name: "${{ env.COMMIT_MSG }}"
+          body_path: ./Scripts/revision.txt
+          body: "Continued work on development"
+          draft: false
           prerelease: true
-          title: "${{ env.COMMIT_MSG }}"
-          files: |
-            ${{ env.APK_PATH }}Sudoku.apk
+          files:
+            ${{ env.APK_PATH }}app-debug.apk
 
       - name: Clean up
         if: steps.create_prop_file.outcome == 'success'
