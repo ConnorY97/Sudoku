@@ -66,7 +66,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "${{ env.COMMIT_MSG }}"
-          body_path: "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/Scripts/revision.txt"
+          body_path: "./Scripts/revision.txt"
           body: "Continued work on development"
           draft: false
           prerelease: true
