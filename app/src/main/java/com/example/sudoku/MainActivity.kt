@@ -212,14 +212,14 @@ fun initializeGrid(
                             val isValid = validateBoard(board)
 
                             // Validate the editableCells
-                            confirmEditableCells(editableCells, board)
+                            val problematicCells = confirmEditableCells(editableCells, board)
 
                             // Check if all cells are filled
                             if (areAllCellsFilled(sudokuGrid)) {
                                 Toast.makeText(context, "Board Filled", Toast.LENGTH_SHORT).show()
 
                                 // Provide visual feedback for valid and invalid cells
-                                val finished = showCorrectCells(sudokuGrid, editableCells)
+                                val finished = showCorrectCells(sudokuGrid, editableCells, problematicCells)
                                 if (finished) {
                                     timer.stop()
                                 }
@@ -240,34 +240,44 @@ fun initializeGrid(
     }
 }
 
-fun showCorrectCells(sudokuGrid: GridLayout,
-                     editableCells: MutableMap<Pair<Int, Int>, Boolean>):
-        Boolean {
-    var allCellsCorrect = true
-    // Iterate through the map
-    for ((key, isValid) in editableCells) {
-        val (row, col) = key // Destructure the Pair to get row and column
-        val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
-        if (isValid) {
-            println("Cell ($row, $col) is valid.")
-            cell.setBackgroundColor(Color.GREEN)
-        } else {
-            println("Cell ($row, $col) is invalid.")
-            cell.setBackgroundColor(Color.RED)
-            allCellsCorrect = false
+fun showCorrectCells(
+    sudokuGrid: GridLayout,
+    editableCells: MutableMap<Pair<Int, Int>, Boolean>,
+    problematicCells: Set<Pair<Int, Int>>
+): Boolean {
+    var finished = true
+
+    for (row in 0 until gridSize) {
+        for (col in 0 until gridSize) {
+            val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
+            val cellKey = Pair(row, col)
+
+            when {
+                problematicCells.contains(cellKey) -> {
+                    cell.setBackgroundColor(Color.RED) // Highlight problematic cells in red
+                    finished = false
+                }
+                editableCells[cellKey] == false -> {
+                    cell.setBackgroundColor(Color.RED) // Highlight correct editable cells in green
+                }
+                editableCells[cellKey] == true -> {
+                    cell.setBackgroundColor(Color.GREEN) // Highlight correct editable cells in green
+                }
+            }
         }
     }
 
-    // Reset cell colors after a delay
+    // Reset highlighting after a delay, if needed
     Handler(Looper.getMainLooper()).postDelayed({
         for (row in 0 until gridSize) {
             for (col in 0 until gridSize) {
                 val cell = sudokuGrid.getChildAt(row * gridSize + col) as EditText
-                cell.setBackgroundResource(R.color.cell_background)
+                cell.setBackgroundResource(R.color.cell_background) // Reset to default background
             }
         }
-    }, 2000) // Adjust delay as needed
-    return allCellsCorrect
+    }, 2000) // Adjust the delay as necessary
+
+    return finished
 }
 
 // Game Logic
@@ -280,6 +290,7 @@ fun generatePuzzle(context: Context,
     var grid = Array(gridSize) { IntArray(gridSize) {0} }
     if (fillBoard(grid)) {
         Log.i("generatePuzzle","Board filled")
+        logBoard(grid)
         if (validateBoard(grid)) {
             Log.i("generatePuzzle", "Validated full board")
             createPuzzle(grid, difficulty, editableCells)
@@ -306,7 +317,17 @@ fun generatePuzzle(context: Context,
     return grid
 }
 
-// Backtracking algorithm to fill the board
+fun logBoard(board: Array<IntArray>) {
+    val boardString = StringBuilder()
+    for (row in board) {
+        for (col in row) {
+            boardString.append("$col ")
+        }
+        boardString.append("\n") // Newline after each row
+    }
+    Log.i("logBoard", boardString.toString())
+}
+
 fun fillBoard(board: Array<IntArray>): Boolean {
     for (row in 0 until 9) {
         for (col in 0 until 9) {
@@ -315,9 +336,11 @@ fun fillBoard(board: Array<IntArray>): Boolean {
                 for (num in numbers) {
                     if (isValidMove(board, row, col, num)) {
                         board[row][col] = num
+
                         if (fillBoard(board)) {
                             return true
                         }
+
                         board[row][col] = 0 // Backtrack
                     }
                 }
@@ -332,7 +355,7 @@ fun createPuzzle(board: Array<IntArray>,
                  difficulty: String,
                  editableCells: MutableMap<Pair<Int, Int>, Boolean>) {
     val chanceToBeEmpty = when (difficulty) {
-        "easy" -> 0.2 // 20% cells empty
+        "easy" -> 0.1 // 20% cells empty
         "medium" -> 0.5 // 50% cells empty
         "hard" -> 0.7 // 70% cells empty
         else -> 0.2
@@ -417,35 +440,73 @@ fun isValidMove(board: Array<IntArray>, row: Int, col: Int, num: Int): Boolean {
     return true
 }
 
-fun confirmEditableCells(editableCells: MutableMap<Pair<Int, Int>, Boolean>,
-                         board: Array<IntArray>) {
-    val subGridSize = sqrt(gridSize.toDouble()).toInt() // 3 for a 9x9 board
-    for ((cell, isValid) in editableCells) {
-        val row = cell.first
-        val col = cell.second
-
-        val (startRow, startCol) = findSubGridStart(row,col, subGridSize)
-
-        // Is the column valid
-        if (!isUnique(getColumn(board, col))) {
-            Log.i("confirmEditableCells", "Column $col is invalid")
-            editableCells[Pair(row, col)] = false
-        }
-        // is the row valid
-        else if (!isUnique(getColumn(board, row))) {
-            Log.i("confirmEditableCells", "Row $row is invalid")
-            editableCells[Pair(row, col)] = false
-        }
-        else if (!isUnique(getSubGrid(board, startRow, startCol, subGridSize))) {
-            Log.i("confirmEditableCells", "Subgrid $startRow $startCol is invalid")
-            editableCells[Pair(row, col)] = false
-        }
-        else {
-            Log.i("confirmEditableCells", "Cell $row $col is valid!")
-            editableCells[Pair(row, col)] = true
+// Helper to find duplicate positions in an array
+fun findDuplicatePositions(array: IntArray): Set<Int> {
+    val seen = mutableSetOf<Int>()
+    val duplicates = mutableSetOf<Int>()
+    array.forEachIndexed { index, num ->
+        if (num != 0) {
+            if (!seen.add(num)) {
+                duplicates.add(index)
+            }
         }
     }
+    return duplicates
 }
+
+fun confirmEditableCells(
+    editableCells: MutableMap<Pair<Int, Int>, Boolean>,
+    board: Array<IntArray>
+): Set<Pair<Int, Int>> {
+    val subGridSize = sqrt(board.size.toDouble()).toInt() // Calculate sub-grid size (e.g., 3 for 9x9)
+
+    // Create a map to track problematic cells
+    val problematicCells = mutableSetOf<Pair<Int, Int>>()
+
+    // Check rows
+    for (row in board.indices) {
+        val duplicates = findDuplicatePositions(board[row])
+        duplicates.forEach { col ->
+            problematicCells.add(Pair(row, col))
+        }
+    }
+
+    // Check columns
+    for (col in board.indices) {
+        val column = getColumn(board, col)
+        val duplicates = findDuplicatePositions(column)
+        duplicates.forEach { row ->
+            problematicCells.add(Pair(row, col))
+        }
+    }
+
+    // Check sub-grids
+    for (startRow in 0 until board.size step subGridSize) {
+        for (startCol in 0 until board.size step subGridSize) {
+            val subGrid = getSubGrid(board, startRow, startCol, subGridSize)
+            val duplicates = findDuplicatePositions(subGrid)
+            duplicates.forEach { index ->
+                val row = startRow + index / subGridSize
+                val col = startCol + index % subGridSize
+                problematicCells.add(Pair(row, col))
+            }
+        }
+    }
+
+    // Update the editableCells map with the validation results
+    for (row in board.indices) {
+        for (col in board.indices) {
+            val isEditable = editableCells.containsKey(Pair(row, col))
+            val isValid = !problematicCells.contains(Pair(row, col))
+            if (isEditable) {
+                editableCells[Pair(row, col)] = isValid
+            }
+        }
+    }
+
+    return problematicCells
+}
+
 
 // Utilityfunctions
 fun formatElapsedTime(elapsedMillis: Long): String {
