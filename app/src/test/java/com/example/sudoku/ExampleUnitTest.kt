@@ -34,4 +34,31 @@ class SudokuTest {
         createPuzzle(board, "Easy", editableCells)
         assertTrue("Puzzle successfully created", validateBoard(board))
     }
+
+    @Test
+    fun findDuplicationTests() {
+        val row = IntArray(gridSize) { it }
+        assertTrue(
+            "Failed to parse valid row",
+            findDuplicatePositions(0, row, true).isEmpty()
+        )
+
+        assertTrue(
+            "Failed to parse valid column",
+            findDuplicatePositions(0, row, false).isEmpty()
+        )
+
+        // Insert duplication
+        row[0] = 8
+
+        assertTrue(
+            "Failed to find duplication in row",
+            findDuplicatePositions(0, row, true).size == 2
+        )
+
+        assertTrue(
+            "Failed to find duplication in column",
+            findDuplicatePositions(0, row, false).size == 2
+        )
+    }
 }
