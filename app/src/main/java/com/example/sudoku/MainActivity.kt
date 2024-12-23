@@ -486,35 +486,40 @@ fun findDuplicatePositions(
 }
 
 
-//fun findDuplicatePositionInSubGrid(
-//    startRow: Int,
-//    startCol: Int,
-//    array: IntArray
-//): Set<Pair<Int, Int>> {
-//    val seen = mutableMapOf<Int, MutableList<Pair<Int, Int>>>() // Map to store positions of each number
-//    val duplicates = mutableSetOf<Pair<Int, Int>>() // Set to store duplicate positions
-//
-//    array.forEachIndexed { index, num ->
-//        if (num != 0) { // Ignore zero values (empty cells)
-//            if (seen.containsKey(num)) {
-//                seen[num]?.add(Pair(index, col)) // Add this index to the list of positions for this number
-//            } else {
-//                seen[num] = mutableListOf(Pair(index, col)) // Initialize a list with the current index
-//            }
-//        }
-//    }
-//
-//    // Iterate through the map and add all duplicates (more than one occurrence of a number)
-//    seen.forEach { (num, positions) ->
-//        if (positions.size > 1) {
-//            positions.forEach { pos ->
-//                duplicates.add(pos)// Add to duplicates set
-//            }
-//        }
-//    }
-//
-//    return duplicates
-//}
+fun findDuplicatePositionInSubGrid(
+    startRow: Int,
+    startCol: Int,
+    board: Array<IntArray>
+): Set<Pair<Int, Int>> {
+    val seen = mutableMapOf<Int, MutableList<Pair<Int, Int>>>() // Map to store positions of each number
+    val duplicates = mutableSetOf<Pair<Int, Int>>() // Set to store duplicate positions
+
+    // Iterate through the subgrid
+    for (row in startRow until startRow + 3) {
+        for (col in startCol until startCol + 3) {
+            val num = board[row][col]
+            if (num != 0) { // Ignore zero values (empty cells)
+                if (seen.containsKey(num)) {
+                    seen[num]?.add(Pair(row, col)) // Add this position to the list for this number
+                } else {
+                    seen[num] = mutableListOf(Pair(row, col)) // Initialize the list with the current position
+                }
+            }
+        }
+    }
+
+    // Iterate through the map and add all duplicates (more than one occurrence of a number)
+    seen.forEach { (_, positions) ->
+        if (positions.size > 1) {
+            positions.forEach { pos ->
+                duplicates.add(pos) // Add to duplicates set
+            }
+        }
+    }
+
+    return duplicates
+}
+
 
 fun confirmEditableCells(
     editableCells: MutableMap<Pair<Int, Int>, Boolean>,
@@ -542,12 +547,15 @@ fun confirmEditableCells(
         }
     }
 
-//    // Check the sub grids
-//    for (row in 0 until gridSize step 3) {
-//        for (col in 0 until gridSize step 3) {
-//            val duplicates = findDuplicatePositionInSubGrid(row, col, getSubGrid(board, row, col, subGridSize))
-//        }
-//    }
+    // Check the sub grids
+    for (row in 0 until gridSize step 3) {
+        for (col in 0 until gridSize step 3) {
+            val duplicates = findDuplicatePositionInSubGrid(row, col, board)
+            duplicates.forEach { problemCell ->
+                problematicCells.add(problemCell) // Add problematic cell to the set
+            }
+        }
+    }
 
     // Update the editableCells map with the validation results
     for (row in board.indices) {
