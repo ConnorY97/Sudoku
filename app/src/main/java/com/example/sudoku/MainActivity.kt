@@ -1,7 +1,9 @@
 package com.example.sudoku
 
+//region imports
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -24,6 +26,7 @@ import com.google.gson.Gson
 import java.util.Locale
 import kotlin.math.sqrt
 import kotlin.random.Random
+//endregion
 
 // Constants
 const val gridSize = 9
@@ -32,6 +35,7 @@ class MainActivity : ComponentActivity() {
     // Variables
     private val editableCells: MutableMap<Pair<Int, Int>, Boolean> = mutableMapOf()
     private var sudokuBoard = Array(gridSize) { IntArray(gridSize) { 0 } }
+    private var elapsedTime: Long = Long.MAX_VALUE
 
     // Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,25 +43,63 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Log.i("onCreate", "Initializing Variables")
-        sudokuBoard = generatePuzzle(this,"Easy", editableCells)
+        // Get the game mode from the Intent (null check instead of empty string check)
+        val gameMode = intent.getStringExtra("GAME_MODE")
+
+        Log.i("onCreate", "Check Game Mode")
+        if (!gameMode.isNullOrEmpty()) {
+            Log.i("onCreate", "Attempt to load map")
+            // If in load game mode, try to load the board
+            val boardName = intent.getStringExtra("BOARD_NAME")
+
+            if (boardName != null) {
+                Log.i("onCreate", "Retrieved map name")
+                // Try loading the saved game
+                Log.i("onCreate", "Attempting to load game")
+                val (board, cells, savedTime) = loadGame(this, boardName)
+
+                if (board == null || cells == null) {
+                    Log.i("onCreate", "Failed to load game")
+                    // If board loading failed, show a toast and navigate to Home
+                    Toast.makeText(this, "Failed to load board, invalid name!", Toast.LENGTH_SHORT).show()
+                    val homeScreen = Intent(this, HomeActivity::class.java)
+                    startActivity(homeScreen)
+                    finish()  // Optionally finish the current activity to avoid going back
+                } else {
+                    Log.i("onCreate", "Successfully loaded board")
+                    sudokuBoard = board
+                    editableCells.clear()
+                    editableCells.putAll(cells)
+                    elapsedTime = savedTime
+                }
+            } else {
+                // If no boardName is provided, show an error message
+                Log.i("onCreate", "Invalid board name")
+                Toast.makeText(this, "Invalid board name!", Toast.LENGTH_SHORT).show()
+                val homeScreen = Intent(this, HomeActivity::class.java)
+                startActivity(homeScreen)
+                finish()  // Exit the activity
+            }
+        } else {
+            Log.i("onCreate", "Initializing Variables")
+            sudokuBoard = generatePuzzle(this,"Easy", editableCells)
+        }
 
         Log.i("onCreate", "Initializing UI")
         val (sudokuGrid, timer) =
-            setUpUI(this, sudokuBoard, editableCells)?.map { it as View } ?: throw IllegalStateException("UI setup failed")
+            setUpUI(this, sudokuBoard, editableCells, elapsedTime)?.map { it as View } ?: throw IllegalStateException("UI setup failed")
         if (sudokuGrid is GridLayout && timer is Chronometer) {
-            Log.i("onCreate", "Successfully retrieved sudoku grid and timer")
+            Log.i("onCreate", "Successfully initialized UI")
+
             initializeGrid(this, sudokuGrid, sudokuBoard, editableCells, timer)
-        }
-        else {
-            Log.i("onCreate", "Failed to retrieve sudoku grid or timer")
         }
     }
 }
 
 fun setUpUI(context: Context,
             sudokuBoard: Array<IntArray>,
-            editableCells: MutableMap<Pair<Int, Int>, Boolean>
+            editableCells: MutableMap<Pair<Int, Int>, Boolean>,
+            elapsedTime: Long
 ): List<View>? {
     if (context is Activity)
     {
@@ -72,10 +114,17 @@ fun setUpUI(context: Context,
         val timer: Chronometer = context.findViewById(R.id.chronometer)
         Log.i("setUpUI", "Timer created")
 
-        // Start the timer
-        timer.base = SystemClock.elapsedRealtime()
+        if (elapsedTime == Long.MAX_VALUE) {
+            // Start the timer
+            timer.base = SystemClock.elapsedRealtime()
+        }
+        else
+        {
+            timer.base = SystemClock.elapsedRealtime() - elapsedTime
+        }
         timer.start()
         Log.i("setUpUI", "Timer Started")
+
 
         confirmSaveButton.setOnClickListener {
             // Get the board name from the input field
@@ -86,9 +135,9 @@ fun setUpUI(context: Context,
                 Toast.makeText(context, "Please enter a valid name.", Toast.LENGTH_SHORT).show()
             } else {
                 // Save the game with the entered board name
-                //val elapsedTime = SystemClock.elapsedRealtime() - chronometer.base
+                val elapsedTime = SystemClock.elapsedRealtime() - timer.base
                 val success =
-                    saveGame(context, boardName, sudokuBoard, editableCells)
+                    saveGame(context, boardName, sudokuBoard, editableCells, elapsedTime)
                 if (success) {
                     Toast.makeText(context, "Board saved successfully!", Toast.LENGTH_SHORT).show()
 
@@ -584,7 +633,8 @@ fun formatElapsedTime(elapsedMillis: Long
 // Save game state
 fun saveGame(context: Context, boardName: String,
              board: Array<IntArray>,
-             editableCells: Map<Pair<Int, Int>, Boolean>
+             editableCells: Map<Pair<Int, Int>, Boolean>,
+             elapsedTime: Long
 ): Boolean {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
@@ -606,6 +656,9 @@ fun saveGame(context: Context, boardName: String,
     editor.putString("${boardName}_board", gson.toJson(board))
     editor.putString("${boardName}_editableCells", gson.toJson(editableCells))
 
+    // Save timer
+    editor.putLong("${boardName}_elapsedTime", elapsedTime)
+
     // Commit changes
     editor.apply()
     return true // Indicate success
@@ -615,9 +668,7 @@ fun saveGame(context: Context, boardName: String,
 // Load game state
 fun loadGame(context: Context,
              boardName: String
-): Pair<Array<IntArray>?,
-        Map<Pair<Int, Int>,
-                Boolean>?> {
+): Triple<Array<IntArray>?, Map<Pair<Int, Int>, Boolean>?, Long> {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val gson = Gson()
 
@@ -629,5 +680,8 @@ fun loadGame(context: Context,
     val editableCellsJson = sharedPreferences.getString("${boardName}_editableCells", null)
     val editableCells = if (editableCellsJson != null) gson.fromJson(editableCellsJson, Map::class.java) as Map<Pair<Int, Int>, Boolean> else null
 
-    return Pair(board, editableCells)
+    // Load elapsed time
+    val elapsedTime = sharedPreferences.getLong("${boardName}_elapsedTime", 0)
+
+    return Triple(board, editableCells, elapsedTime)
 }

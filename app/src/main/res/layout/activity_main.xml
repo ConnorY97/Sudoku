@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="16dp"
-    android:background="@drawable/river_background">
+    android:background="@drawable/green_background">
 
     <Chronometer
         android:id="@+id/chronometer"
