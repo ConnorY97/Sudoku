@@ -13,3 +13,4 @@ Sudoku revisions
 - Add dynamic back grounds and the option to have a solid background.
 - Add option to show if input is correct as soon as it is added
 - UI pass
+- Improve buttons
