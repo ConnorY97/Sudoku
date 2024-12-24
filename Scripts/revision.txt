@@ -1,11 +1,10 @@
 Sudoku revisions
 
 **Feature**
-- IMPLEMENTED LOADING
-    I had to fix how I was reading the editable list
+- Added a dot menu to the sudoku board, this will contain the settings and save menu
+    This is the start of the UI pass. But there is still a lot to do
 
 **Tests**
-- Save and load testing
 
 **To Do**
 - Add dynamic back grounds and the option to have a solid background.

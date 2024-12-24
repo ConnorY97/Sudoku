@@ -15,12 +15,15 @@ import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.Chronometer
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.Toast
+import android.widget.Toolbar
 import androidx.activity.ComponentActivity
 import com.google.gson.Gson
 import java.util.Locale
@@ -36,6 +39,10 @@ class MainActivity : ComponentActivity() {
     private val editableCells: MutableMap<Pair<Int, Int>, Boolean> = mutableMapOf()
     private var sudokuBoard = Array(gridSize) { IntArray(gridSize) { 0 } }
     private var elapsedTime: Long = Long.MAX_VALUE
+    private lateinit var timer: Chronometer
+    private lateinit var confirmSaveButton: Button
+    private lateinit var boardNameInput: EditText
+    private lateinit var sudokuGrid: GridLayout
 
     // Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,12 +93,49 @@ class MainActivity : ComponentActivity() {
         }
 
         Log.i("onCreate", "Initializing UI")
-        val (sudokuGrid, timer) =
+        val (retrievedGrid, retrievedTimer, retrievedConfirmButton, retrievedBoardName) =
             setUpUI(this, sudokuBoard, editableCells, elapsedTime)?.map { it as View } ?: throw IllegalStateException("UI setup failed")
-        if (sudokuGrid is GridLayout && timer is Chronometer) {
+        if (retrievedGrid is GridLayout && retrievedTimer is Chronometer && retrievedConfirmButton is Button && retrievedBoardName is EditText) {
+            sudokuGrid = retrievedGrid
+            timer = retrievedTimer
+            confirmSaveButton = retrievedConfirmButton
+            boardNameInput = retrievedBoardName
             Log.i("onCreate", "Successfully initialized UI")
 
             initializeGrid(this, sudokuGrid, sudokuBoard, editableCells, timer)
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        Log.d("MainActivity", "Menu created")
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_save -> {
+                // Handle Save Game action
+                Toast.makeText(this, "Save Game clicked", Toast.LENGTH_SHORT).show()
+                // Hide the board while we take input
+                sudokuGrid.visibility = View.GONE
+                timer.visibility = View.INVISIBLE
+                // Show the input field and confirm button
+                boardNameInput.visibility = View.VISIBLE
+                confirmSaveButton.visibility = View.VISIBLE
+                true
+            }
+            R.id.menu_settings -> {
+                // Handle Settings action
+                Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
+                true
+            }
+            R.id.menu_exit -> {
+                // Handle Exit action
+                finish() // Close the app
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 }
@@ -107,7 +151,6 @@ fun setUpUI(context: Context,
         val confirmSaveButton = context.findViewById<Button>(R.id.confirmSaveButton)
         val boardNameInput = context.findViewById<EditText>(R.id.boardNameInput)
         val sudokuGrid = context.findViewById<GridLayout>(R.id.sudokuGrid)
-        val saveGameButton = context.findViewById<Button>(R.id.saveGameButton)
         Log.i("setUpUI", "Buttons created")
 
         // Timer
@@ -135,9 +178,9 @@ fun setUpUI(context: Context,
                 Toast.makeText(context, "Please enter a valid name.", Toast.LENGTH_SHORT).show()
             } else {
                 // Save the game with the entered board name
-                val elapsedTime = SystemClock.elapsedRealtime() - timer.base
+                val finalTime = SystemClock.elapsedRealtime() - timer.base
                 val success =
-                    saveGame(context, boardName, sudokuBoard, editableCells, elapsedTime)
+                    saveGame(context, boardName, sudokuBoard, editableCells, finalTime)
                 if (success) {
                     Toast.makeText(context, "Board saved successfully!", Toast.LENGTH_SHORT).show()
 
@@ -147,7 +190,6 @@ fun setUpUI(context: Context,
 
                     // Hide the board while we take input
                     sudokuGrid.visibility = View.VISIBLE
-                    saveGameButton.visibility = View.VISIBLE
 
                     // Clear the input field for future use
                     boardNameInput.text.clear()
@@ -158,17 +200,7 @@ fun setUpUI(context: Context,
             }
         }
 
-        saveGameButton.setOnClickListener {
-            // Hide the board while we take input
-            sudokuGrid.visibility = View.GONE
-            saveGameButton.visibility = View.GONE
-            //chronometer.visibility = View.INVISIBLE
-            // Show the input field and confirm button
-            boardNameInput.visibility = View.VISIBLE
-            confirmSaveButton.visibility = View.VISIBLE
-        }
-
-        return listOf(sudokuGrid, timer)
+        return listOf(sudokuGrid, timer, confirmSaveButton, boardNameInput, sudokuGrid)
     }
     return null
 }
@@ -479,16 +511,6 @@ fun getSubGrid(board: Array<IntArray>,
     return subGrid.toIntArray()
 }
 
-// Helper to find the start row and column of a sub-grid
-fun findSubGridStart(row: Int,
-                     col: Int,
-                     subGridSize: Int
-): Pair<Int, Int> {
-    val startRow = (row / subGridSize) * subGridSize
-    val startCol = (col / subGridSize) * subGridSize
-    return Pair(startRow, startCol)
-}
-
 // Check if placing a number is valid
 fun isValidMove(board: Array<IntArray>,
                 row: Int,
@@ -575,8 +597,6 @@ fun confirmEditableCells(
     editableCells: MutableMap<Pair<Int, Int>, Boolean>,
     board: Array<IntArray>
 ): Set<Pair<Int, Int>> {
-    val subGridSize = sqrt(board.size.toDouble()).toInt() // Calculate sub-grid size (e.g., 3 for 9x9)
-
     // Create a set to track problematic cells
     val problematicCells = mutableSetOf<Pair<Int, Int>>()
 
@@ -620,15 +640,6 @@ fun confirmEditableCells(
 
     // Return the set of problematic cells
     return problematicCells
-}
-
-
-// Utilityfunctions
-fun formatElapsedTime(elapsedMillis: Long
-): String {
-    val minutes = (elapsedMillis / 1000) / 60
-    val seconds = (elapsedMillis / 1000) % 60
-    return String.format("%02d:%02d", minutes, seconds)
 }
 
 // Save game state
