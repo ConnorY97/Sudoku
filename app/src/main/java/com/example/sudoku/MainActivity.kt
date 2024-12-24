@@ -692,8 +692,6 @@ fun loadGame(context: Context,
         null
     }
 
-
-
     // Load elapsed time
     val elapsedTime = sharedPreferences.getLong("${boardName}_elapsedTime", 0)
 
