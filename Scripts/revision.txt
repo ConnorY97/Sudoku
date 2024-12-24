@@ -1,0 +1,14 @@
+Sudoku revisions
+
+**Feature**
+- IMPLEMENTED LOADING
+    I had to fix how I was reading the editable list
+
+**Tests**
+- Save and load testing
+
+**To Do**
+- Add dynamic back grounds and the option to have a solid background.
+- Add option to show if input is correct as soon as it is added
+- UI pass
+- Improve buttons

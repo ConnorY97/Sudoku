@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timezone
 import traceback
 
+
 def to_unix_timestamp(dt_str):
     """
     Converts an ISO 8601 datetime string to a Unix timestamp in seconds.
@@ -16,6 +17,7 @@ def to_unix_timestamp(dt_str):
     except Exception as e:
         print(f"Error parsing datetime '{dt_str}': {e}")
         return 0
+
 
 def convert_xml_to_json(xml_file_path, output_file_path):
     try:
@@ -29,7 +31,7 @@ def convert_xml_to_json(xml_file_path, output_file_path):
             main_suite = root
         else:
             main_suite = root.find("./testsuite")
-        
+
         if main_suite is None:
             print("Warning: No 'testsuite' element found. Available elements:")
             for elem in root:
@@ -64,13 +66,29 @@ def convert_xml_to_json(xml_file_path, output_file_path):
             test_start = start_timestamp
             test_stop = test_start + int(duration)
 
-            # Handle failure details
+            # Handle failure details (message and stack trace)
             message = None
             trace = None
+            # Handle failure details
             failure_element = testcase.find(".//failure")
             if failure_element is not None:
-                message = failure_element.findtext("message", "No message provided")
-                trace = failure_element.findtext("stack-trace", "No trace available")
+                # Extract and clean up the 'message' attribute
+                raw_message = failure_element.attrib.get("message", "No message provided")
+                if raw_message.startswith("junit.framework.AssertionFailedError:"):
+                    message = raw_message.replace("junit.framework.AssertionFailedError:", "").strip()
+                else:
+                    message = raw_message.strip()
+
+                # Extract and optionally trim the trace
+                trace = failure_element.text.strip() if failure_element.text else "No trace available"
+                trace_lines = trace.splitlines()
+                if len(trace_lines) > 5:  # Limit to the top 5 lines if trace is too long
+                    trace = "\n".join(trace_lines[:5]) + "\n... (truncated)"
+            else:
+                message = "Test passed"
+                trace = None
+
+
 
             # Create the test entry
             test_entry = {
@@ -131,6 +149,7 @@ def convert_xml_to_json(xml_file_path, output_file_path):
 
     except Exception as e:
         print(f"Error during conversion: {e}")
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
-name: Build and Upload APK
+name: Build and Create Release
 
 on:
-  workflow_dispatch:
-    {}
+  push:
+    tags:
+      - "*"
+
 
 jobs:
   build:
@@ -54,29 +56,24 @@ jobs:
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S mv ${{ env.APK_PATH }}app-debug.apk ${{ env.APK_PATH }}Sudoku.apk
 
-      # Upload APK artifact
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      - name: Get Commit Message
+        shell: bash
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "COMMIT_MSG=$COMMIT_MSG" >> $GITHUB_ENV
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: SudokuApp
-          path: ${{ env.APK_PATH }}Sudoku.apk
+          name: "${{ env.COMMIT_MSG }}"
+          body_path: "./Scripts/revision.txt"
+          body: "Continued work on development"
+          draft: false
+          prerelease: true
+          token: ${{ secrets.TOKEN }}
+          files:
+            ${{ env.APK_PATH }}Sudoku.apk
 
-      # Optional: Upload to Firebase (uncomment if needed)
-      # - name: Deploy to Firebase
-      #   uses: wzieba/Firebase-Distribution-Github-Action@v1
-      #   with:
-      #     appId: ${{ secrets.FIREBASE_APP_ID }}
-      #     token: ${{ secrets.FIREBASE_AUTH_TOKEN }}
-      #     groups: testers_group
-      #     file: app/build/outputs/apk/release/app-release.apk
-
-      # Optional: Upload to Google Play (uncomment if needed)
-      # - name: Upload to Google Play
-      #   uses: google-github-actions/upload-play-store-release@v1
-      #   with:
-      #     service-account-json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-      #     package-name: com.example.sudoku
-      #     release-file: app/build/outputs/apk/release/app-release.apk
 
       - name: Clean up
         if: steps.create_prop_file.outcome == 'success'
