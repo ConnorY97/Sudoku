@@ -195,6 +195,7 @@ fun initializeGrid(
 ) {
     Log.i("initializeGrid", "Initializing")
     // Set up the grid for Sudoku
+
     for (row in 0 until gridSize) {
         for (col in 0 until gridSize) {
             val cell = EditText(context)
@@ -678,7 +679,20 @@ fun loadGame(context: Context,
 
     // Load editable cells
     val editableCellsJson = sharedPreferences.getString("${boardName}_editableCells", null)
-    val editableCells = if (editableCellsJson != null) gson.fromJson(editableCellsJson, Map::class.java) as Map<Pair<Int, Int>, Boolean> else null
+    val editableCells = if (editableCellsJson != null) {
+        val tempMap = gson.fromJson(editableCellsJson, Map::class.java) as Map<String, Boolean>
+
+        tempMap.mapNotNull { (key, value) ->
+            // Parse the string key "(x, y)" into a Pair<Int, Int>
+            val match = "\\((\\d+),\\s*(\\d+)\\)".toRegex().matchEntire(key)
+            val (first, second) = match?.destructured ?: return@mapNotNull null
+            Pair(first.toInt(), second.toInt()) to value
+        }.toMap()
+    } else {
+        null
+    }
+
+
 
     // Load elapsed time
     val elapsedTime = sharedPreferences.getLong("${boardName}_elapsedTime", 0)

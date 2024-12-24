@@ -1,15 +1,13 @@
 Sudoku revisions
 
 **Feature**
-- Sub grid solution checking
-- Consolidated the row and column checking into one function
+- IMPLEMENTED LOADING
+    I had to fix how I was reading the editable list
 
 **Tests**
-- Added tests for row and column checking
-- Added test for sub grid checking
+
 
 **To Do**
-- Implement loading!!
 - Add dynamic back grounds and the option to have a solid background.
 - Add option to show if input is correct as soon as it is added
 - UI pass
