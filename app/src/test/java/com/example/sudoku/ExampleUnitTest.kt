@@ -250,7 +250,7 @@ class SudokuTest {
     }
 
     @Test
-    fun testIcSudokuLauncherMipmap() {
+    fun iconResourceLoadingTest() {
         // Mock the Context
         val context: Context = mock()
 
