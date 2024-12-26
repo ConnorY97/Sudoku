@@ -42,7 +42,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var confirmSaveButton: Button
     private lateinit var boardNameInput: EditText
     private lateinit var sudokuGrid: GridLayout
-    private val homeScreen = Intent(this, HomeActivity::class.java)
 
     // Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,8 +83,11 @@ class MainActivity : ComponentActivity() {
                 Log.i("onCreate", "Invalid board name, returning home")
                 Toast.makeText(this, "Invalid board name!", Toast.LENGTH_SHORT).show()
 
+                val homeScreen = Intent(this, HomeActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
                 startActivity(homeScreen)
-                finish()  // Exit the activity
+                finish()  // Optional if you want to finish this activity explicitly
             }
         } else {
             Log.i("onCreate", "Initializing Variables")
@@ -131,10 +133,14 @@ class MainActivity : ComponentActivity() {
                 true
             }
             R.id.menu_main -> {
+                val homeScreen = Intent(this, HomeActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
                 startActivity(homeScreen)
-                finish()  // Exit the activity
+                finish()  // Optional if you want to finish this activity explicitly
                 true
             }
+
             R.id.menu_exit -> {
                 // Handle Exit action
                 finish() // Close the app

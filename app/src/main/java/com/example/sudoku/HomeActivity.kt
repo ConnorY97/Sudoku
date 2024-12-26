@@ -1,9 +1,7 @@
 package com.example.sudoku
 
 import android.content.Intent
-import android.content.res.Resources
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import androidx.activity.ComponentActivity
 
@@ -12,15 +10,6 @@ class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-
-        try {
-            val backgroundDrawable = resources.getDrawable(R.drawable.ic_launcher_background, null)
-            val foregroundDrawable = resources.getDrawable(R.drawable.ic_launcher_foreground, null)
-            Log.d("Debug", "Resources loaded successfully.")
-        } catch (e: Resources.NotFoundException) {
-            Log.e("Debug", "Error loading resources", e)
-        }
-
 
         // Easy Button
         val easyButton = findViewById<Button>(R.id.easyButton)
