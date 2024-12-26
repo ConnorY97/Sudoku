@@ -15,10 +15,10 @@ import org.mockito.kotlin.whenever
 
 class SudokuTest {
 
-//    @Test
-//    fun sanityTest() {
-//        assertTrue("I should be able to see this message", false)
-//    }
+    @Test
+    fun sanityTest() {
+        assertTrue("I should be able to see this message", false)
+    }
 
     @Test
     fun fillBoardTest() {
