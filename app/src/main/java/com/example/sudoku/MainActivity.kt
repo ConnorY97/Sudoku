@@ -24,12 +24,10 @@ import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.core.content.ContextCompat.startActivity
 import com.google.gson.Gson
 import java.util.Locale
 import kotlin.math.sqrt
 import kotlin.random.Random
-//endregion
 
 // Constants
 const val gridSize = 9
@@ -97,7 +95,7 @@ class MainActivity : ComponentActivity() {
 
         Log.i("onCreate", "Initializing UI")
         val (retrievedGrid, retrievedTimer, retrievedConfirmButton, retrievedBoardName) =
-            setUpUI(this, sudokuBoard, editableCells, elapsedTime)?.map { it as View } ?: throw IllegalStateException("UI setup failed")
+            setUpUI(this, sudokuBoard, editableCells, elapsedTime)?.map { it } ?: throw IllegalStateException("UI setup failed")
         if (retrievedGrid is GridLayout && retrievedTimer is Chronometer && retrievedConfirmButton is Button && retrievedBoardName is EditText) {
             sudokuGrid = retrievedGrid
             timer = retrievedTimer
@@ -192,7 +190,7 @@ fun setUpUI(context: Context,
                 // Save the game with the entered board name
                 val finalTime = SystemClock.elapsedRealtime() - timer.base
                 val success =
-                    saveGame(context, boardName, sudokuBoard, editableCells, finalTime)
+                    saveGame(context, boardName, sudokuBoard, editableCells, finalTime, false)
                 if (success) {
                     Toast.makeText(context, "Board saved successfully!", Toast.LENGTH_SHORT).show()
 
@@ -658,7 +656,8 @@ fun confirmEditableCells(
 fun saveGame(context: Context, boardName: String,
              board: Array<IntArray>,
              editableCells: Map<Pair<Int, Int>, Boolean>,
-             elapsedTime: Long
+             elapsedTime: Long,
+             finished: Boolean
 ): Boolean {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
@@ -672,7 +671,7 @@ fun saveGame(context: Context, boardName: String,
     }
 
     // Add new board name to saved list
-    savedBoards.add(boardName)
+    savedBoards += boardName
     editor.putStringSet("SavedBoards", savedBoards)
 
     // Save board and editable cells
@@ -682,6 +681,9 @@ fun saveGame(context: Context, boardName: String,
 
     // Save timer
     editor.putLong("${boardName}_elapsedTime", elapsedTime)
+
+    // Save whether the game is finished
+    editor.putBoolean("${boardName}_finished", finished)
 
     // Commit changes
     editor.apply()
@@ -703,13 +705,13 @@ fun loadGame(context: Context,
     // Load editable cells
     val editableCellsJson = sharedPreferences.getString("${boardName}_editableCells", null)
     val editableCells = if (editableCellsJson != null) {
-        val tempMap = gson.fromJson(editableCellsJson, Map::class.java) as Map<String, Boolean>
+        val tempMap = gson.fromJson(editableCellsJson, Map::class.java) as Map<*, *>
 
         tempMap.mapNotNull { (key, value) ->
             // Parse the string key "(x, y)" into a Pair<Int, Int>
-            val match = "\\((\\d+),\\s*(\\d+)\\)".toRegex().matchEntire(key)
+            val match = "\\((\\d+),\\s*(\\d+)\\)".toRegex().matchEntire(key as String)
             val (first, second) = match?.destructured ?: return@mapNotNull null
-            Pair(first.toInt(), second.toInt()) to value
+            Pair(first.toInt(), second.toInt()) to value as Boolean
         }.toMap()
     } else {
         null
