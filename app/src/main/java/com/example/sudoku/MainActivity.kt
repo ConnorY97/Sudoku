@@ -24,6 +24,7 @@ import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.core.content.ContextCompat.startActivity
 import com.google.gson.Gson
 import java.util.Locale
 import kotlin.math.sqrt

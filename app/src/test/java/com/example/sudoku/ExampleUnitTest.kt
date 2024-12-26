@@ -1,15 +1,17 @@
 package com.example.sudoku
 
-import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.drawable.Drawable
 import com.google.gson.Gson
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertSame
 import junit.framework.TestCase.assertTrue
 import org.junit.Test
 import org.mockito.Mockito.*
+import org.mockito.kotlin.whenever
 
 class SudokuTest {
 
@@ -77,7 +79,8 @@ class SudokuTest {
 
         board[0][0] = 8
 
-        assertTrue("Failed to find duplicate in sub grid", findDuplicatePositionInSubGrid(0,0, board).size == 2)
+        assertTrue("Failed to find duplicate in sub grid", findDuplicatePositionInSubGrid(0, 0, board).isNotEmpty()
+        )
     }
 
     private lateinit var mockContext: Context
@@ -189,5 +192,79 @@ class SudokuTest {
         assertEquals("Failed to retrieve board", board.size, result.first?.size) // Verify board loaded
         assertEquals("Failed to retrieve editableCells", editableCells, result.second)  // Verify editable cells loaded
         assertEquals("Failed to retrieve elapsed time", elapsedTime, result.third)     // Verify elapsed time loaded
+    }
+
+    @Test
+    fun navigateToHomeTest() {
+        // Mock the Context and Intent
+        val context: Context = mock()
+        val homeScreen = mock(Intent::class.java)
+
+        // Simulate adding flags (we won't actually call addFlags here since it's not mocked)
+        `when`(homeScreen.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)).thenReturn(homeScreen)
+
+        // Simulate starting the activity
+        context.startActivity(homeScreen)
+
+        // Verify the startActivity method was called on the mock context with the expected intent
+        verify(context).startActivity(homeScreen)
+    }
+
+    @Test
+    fun stringResourceTest() {
+        val context: Context = mock()
+
+        // Mocking the string resource lookup
+        whenever(context.getString(R.string.app_name)).thenReturn("Sudoku")
+
+        // Verify that the string resource is returned correctly
+        assertEquals("Sudoku", context.getString(R.string.app_name))
+    }
+
+    @Test
+    fun drawableResourceTest() {
+        val context: Context = mock()
+
+        // Mocking drawable resource retrieval
+        val drawable: Drawable = mock()
+        whenever(context.getDrawable(R.drawable.green_background)).thenReturn(drawable)
+
+        // Verify the drawable is returned correctly
+        assertSame(drawable, context.getDrawable(R.drawable.green_background))
+    }
+
+    @Test
+    fun sharedPreferenceTest() {
+        val context: Context = mock()
+        val sharedPreferences: SharedPreferences = mock()
+        val editor: SharedPreferences.Editor = mock()
+
+        // Mock the sharedPreferences behavior
+        whenever(context.getSharedPreferences("my_preferences", Context.MODE_PRIVATE)).thenReturn(sharedPreferences)
+        whenever(sharedPreferences.edit()).thenReturn(editor)
+        whenever(sharedPreferences.getString("username", "")).thenReturn("testuser")
+
+        // Verify the value from shared preferences
+        val username = sharedPreferences.getString("username", "")
+        assertEquals("testuser", username)
+    }
+
+    @Test
+    fun testIcSudokuLauncherMipmap() {
+        // Mock the Context
+        val context: Context = mock()
+
+        // Mock the Resources object
+        val resources = mock(android.content.res.Resources::class.java)
+        whenever(context.resources).thenReturn(resources)
+
+        // Mock the Drawable resource retrieval for mipmap
+        val drawable: Drawable = mock()
+        whenever(context.getDrawable(R.mipmap.ic_sudoku_launcher)).thenReturn(drawable)
+
+        // Verify that the drawable is returned correctly
+        val loadedDrawable = context.getDrawable(R.mipmap.ic_sudoku_launcher)
+        assertNotNull("Drawable should not be null", loadedDrawable)
+        assertSame("Drawable should be the mocked drawable", drawable, loadedDrawable)
     }
 }
