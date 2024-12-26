@@ -9,6 +9,10 @@
         android:title="Settings"
         />
     <item
+        android:id="@+id/menu_main"
+        android:title="Main Menu"
+        />
+    <item
         android:id="@+id/menu_exit"
         android:title="Exit"/>
 </menu>

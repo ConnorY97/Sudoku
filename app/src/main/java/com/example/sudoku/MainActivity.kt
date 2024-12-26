@@ -23,7 +23,6 @@ import android.widget.Chronometer
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.activity.ComponentActivity
 import com.google.gson.Gson
 import java.util.Locale
@@ -43,6 +42,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var confirmSaveButton: Button
     private lateinit var boardNameInput: EditText
     private lateinit var sudokuGrid: GridLayout
+    private val homeScreen = Intent(this, HomeActivity::class.java)
 
     // Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,9 +81,9 @@ class MainActivity : ComponentActivity() {
                 }
             } else {
                 // If no boardName is provided, show an error message
-                Log.i("onCreate", "Invalid board name")
+                Log.i("onCreate", "Invalid board name, returning home")
                 Toast.makeText(this, "Invalid board name!", Toast.LENGTH_SHORT).show()
-                val homeScreen = Intent(this, HomeActivity::class.java)
+
                 startActivity(homeScreen)
                 finish()  // Exit the activity
             }
@@ -128,6 +128,11 @@ class MainActivity : ComponentActivity() {
             R.id.menu_settings -> {
                 // Handle Settings action
                 Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
+                true
+            }
+            R.id.menu_main -> {
+                startActivity(homeScreen)
+                finish()  // Exit the activity
                 true
             }
             R.id.menu_exit -> {
