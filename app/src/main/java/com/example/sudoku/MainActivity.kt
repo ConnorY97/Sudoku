@@ -191,7 +191,7 @@ fun setUpUI(context: Context,
                 // Save the game with the entered board name
                 val finalTime = SystemClock.elapsedRealtime() - timer.base
                 val success =
-                    saveGame(context, boardName, sudokuBoard, editableCells, finalTime, FINISHED)
+                    saveGame(context, boardName, sudokuBoard, editableCells, finalTime)
                 if (success) {
                     if (FINISHED) {
                         //If the board is finished the we should return to the home screen
@@ -681,7 +681,6 @@ fun saveGame(context: Context, boardName: String,
              board: Array<IntArray>,
              editableCells: Map<Pair<Int, Int>, Boolean>,
              elapsedTime: Long,
-             finished: Boolean
 ): Boolean {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
@@ -707,7 +706,7 @@ fun saveGame(context: Context, boardName: String,
     editor.putLong("${boardName}_elapsedTime", elapsedTime)
 
     // Save whether the game is finished
-    editor.putBoolean("${boardName}_finished", finished)
+    editor.putBoolean("${boardName}_isFinished", FINISHED)
 
     // Commit changes
     editor.apply()
@@ -776,7 +775,7 @@ fun loadGame(context: Context,
     val elapsedTime = sharedPreferences.getLong("${boardName}_elapsedTime", 0)
 
     // Load if the game is finished
-    val finished = sharedPreferences.getBoolean("${boardName}_finished", false)
+    val finished = sharedPreferences.getBoolean("${boardName}_isFinished", false)
 
     val game = GameState(board, editableCells, elapsedTime, finished)
 

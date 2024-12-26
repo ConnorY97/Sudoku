@@ -77,7 +77,9 @@ class SudokuTest {
 
         assertTrue("Failed to parse sub grid", findDuplicatePositionInSubGrid(0, 0, board).isEmpty())
 
+        // It was failing because just adding an 8 into the first position could not guarantee that there would be an issue
         board[0][0] = 8
+        board[0][1] = 8
 
         assertTrue("Failed to find duplicate in sub grid", findDuplicatePositionInSubGrid(0, 0, board).isNotEmpty()
         )
@@ -185,13 +187,13 @@ class SudokuTest {
         `when`(mockSharedPreferences.getLong("${boardName}_elapsedTime", 0)).thenReturn(elapsedTime)
 
         // Act
-        val result = loadGame(mockContext, boardName)
+        val game = loadGame(mockContext, boardName)
 
         // Assert
-        assertNotNull("Load failed", result) // Ensure result is not null
-        assertEquals("Failed to retrieve board", board.size, result.first?.size) // Verify board loaded
-        assertEquals("Failed to retrieve editableCells", editableCells, result.second)  // Verify editable cells loaded
-        assertEquals("Failed to retrieve elapsed time", elapsedTime, result.third)     // Verify elapsed time loaded
+        assertNotNull("Load failed", game) // Ensure result is not null
+        assertEquals("Failed to retrieve board", board.size, game.board?.size) // Verify board loaded
+        assertEquals("Failed to retrieve editableCells", editableCells, game.editableCells)  // Verify editable cells loaded
+        assertEquals("Failed to retrieve elapsed time", elapsedTime, game.elapsedTime)     // Verify elapsed time loaded
     }
 
     @Test
