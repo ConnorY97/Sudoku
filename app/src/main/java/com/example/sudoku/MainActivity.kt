@@ -128,8 +128,10 @@ class MainActivity : ComponentActivity() {
                 true
             }
             R.id.menu_settings -> {
-                // Handle Settings action
-                Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
+                val settingsScreen = Intent(this, SettingsActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                startActivity(settingsScreen)
                 true
             }
             R.id.menu_main -> {
@@ -140,7 +142,6 @@ class MainActivity : ComponentActivity() {
                 finish()  // Optional if you want to finish this activity explicitly
                 true
             }
-
             R.id.menu_exit -> {
                 // Handle Exit action
                 finish() // Close the app
@@ -237,6 +238,7 @@ fun showSaveScreen(context: Context) {
         sudokuGrid.visibility = View.GONE
     }
 }
+
 fun areAllCellsFilled(sudokuGrid: GridLayout
 ): Boolean {
     for (row in 0 until GRIDSIZE) {
