@@ -152,7 +152,7 @@ class MainActivity : ComponentActivity() {
             }
             R.id.menu_exit -> {
                 // Handle Exit action
-                finish() // Close the app
+                finishAffinity() // Close the app
                 true
             }
             else -> super.onOptionsItemSelected(item)
