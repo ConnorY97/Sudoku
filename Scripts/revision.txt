@@ -1,20 +1,11 @@
 Sudoku revisions
 
 **Feature**
-- Fixed the name of the app when it is on the device
-- On finishing the board it will prompt you to save
-    Whether the board is finished or not will now be displayed in the load list
-    Added a data class `gameState`, I will work on using the more to clean up the code
-
-**Fixes**
-- Fixed all code warnings
-- Fixed `findDuplicatesInSubGridTest`
-    The way I was adding an error to the board could actually result in it being correct.
-    So I made it more robust.
+- Added settings sub context menu
+    Currently this only holds the error checking options but it can be easily expanded.
 
 **To Do**
 - Add dynamic back grounds and the option to have a solid background
-- Add option to show if input is correct as soon as it is added
 - UI pass
 - Improve buttons
 - Show if the board is finished or not in the load screen
