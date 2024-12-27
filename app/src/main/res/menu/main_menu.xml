@@ -3,16 +3,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_save"
-        android:title="Save Game" />
+        android:title="@string/sub_menu_save_game" />
     <item
-        android:id="@+id/menu_settings"
-        android:title="Settings"
-        />
+        android:id="@+id/action_settings"
+        android:title="@string/sub_menu_settings"
+        android:orderInCategory="100"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_toggle_feature"
+                android:title="@string/sub_menu_error_check"
+                android:checkable="true"
+                app:showAsAction="never" />
+        </menu>
+    </item>
     <item
         android:id="@+id/menu_main"
-        android:title="Main Menu"
+        android:title="@string/sub_menu_main_manu"
         />
     <item
         android:id="@+id/menu_exit"
-        android:title="Exit"/>
+        android:title="@string/sub_menu_exit"/>
 </menu>

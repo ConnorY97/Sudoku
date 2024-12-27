@@ -32,6 +32,8 @@ import kotlin.random.Random
 // Constants
 const val GRIDSIZE = 9
 var FINISHED = false
+const val PREFS_NAME = "AppPreferences"
+const val KEY_ERROR_CHECKING = "IS_ERROR_CHECKING_ENABLED"
 
 class MainActivity : ComponentActivity() {
     // Variables
@@ -50,6 +52,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        Log.i("onCreate", "Error checking is ${if (isErrorCheckingEnabled(this)) "Error checking Enabled" else "Error checking is disabled"}")
         // Get the game mode from the Intent (null check instead of empty string check)
         val gameMode = intent.getStringExtra("GAME_MODE")
 
@@ -111,6 +114,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         Log.d("MainActivity", "Menu created")
+
+        // Find the menu item by its ID
+        val toggleFeatureMenuItem = menu?.findItem(R.id.action_toggle_feature)
+        if (toggleFeatureMenuItem != null) {
+            toggleFeatureMenuItem.isChecked = isErrorCheckingEnabled(this)
+        }
         return true
     }
 
@@ -119,19 +128,18 @@ class MainActivity : ComponentActivity() {
             R.id.menu_save -> {
                 // Handle Save Game action
                 Toast.makeText(this, "Save Game clicked", Toast.LENGTH_SHORT).show()
-                // Hide the board while we take input
                 sudokuGrid.visibility = View.GONE
                 timer.visibility = View.INVISIBLE
-                // Show the input field and confirm button
                 boardNameInput.visibility = View.VISIBLE
                 confirmSaveButton.visibility = View.VISIBLE
                 true
             }
-            R.id.menu_settings -> {
-                val settingsScreen = Intent(this, SettingsActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                }
-                startActivity(settingsScreen)
+            R.id.action_settings -> {
+                // No specific action here since submenu items will be handled below
+                true
+            }
+            R.id.action_toggle_feature -> {
+                toggleFeature(this, item)
                 true
             }
             R.id.menu_main -> {
@@ -139,7 +147,7 @@ class MainActivity : ComponentActivity() {
                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 }
                 startActivity(homeScreen)
-                finish()  // Optional if you want to finish this activity explicitly
+                finish() // Optional if you want to finish this activity explicitly
                 true
             }
             R.id.menu_exit -> {
@@ -150,6 +158,26 @@ class MainActivity : ComponentActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+}
+
+fun toggleFeature(context: Context,
+                  item: MenuItem,
+) {
+    val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    // Toggle the CheckBox state
+    item.isChecked = !item.isChecked
+
+    // Save the new option
+    sharedPreferences.edit().putBoolean(KEY_ERROR_CHECKING, item.isChecked).apply()
+
+    // Example of user feedback
+    Toast.makeText(context, if (item.isChecked) "Error Checking Enabled!" else "Error Checking Disabled!", Toast.LENGTH_SHORT).show()
+}
+
+fun isErrorCheckingEnabled(context: Context): Boolean {
+    val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    return sharedPreferences.getBoolean(KEY_ERROR_CHECKING, false)
 }
 
 fun setUpUI(context: Context,
@@ -679,10 +707,11 @@ fun confirmEditableCells(
 }
 
 // Save game state
-fun saveGame(context: Context, boardName: String,
-             board: Array<IntArray>,
-             editableCells: Map<Pair<Int, Int>, Boolean>,
-             elapsedTime: Long,
+fun saveGame(
+    context: Context, boardName: String,
+    board: Array<IntArray>,
+    editableCells: Map<Pair<Int, Int>, Boolean>,
+    elapsedTime: Long,
 ): Boolean {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
