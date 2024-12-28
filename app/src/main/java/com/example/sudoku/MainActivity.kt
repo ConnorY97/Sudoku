@@ -370,6 +370,19 @@ fun initializeGrid(
                                     showSaveScreen(context)
                                 }
                             }
+
+                            // If the user wants error checking on
+                            if (isErrorCheckingEnabled(context) && inputText != "") {
+                                if (checkInput(board, row, col, inputNumber)) {
+                                    cell.setBackgroundColor(Color.GREEN)
+                                } else {
+                                    cell.setBackgroundColor(Color.RED)
+                                }
+
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    cell.setBackgroundResource(R.color.cell_background) // Reset to default background
+                                }, 250) // Adjust the delay as necessary
+                            }
                         } catch (e: Exception) {
                             Log.e("initializeGrid", "Error updating cell ($row, $col): ${e.message}")
                         }
@@ -561,10 +574,17 @@ fun getColumn(board: Array<IntArray>, col: Int
     return IntArray(board.size) { row -> board[row][col] }
 }
 
+fun getRow(board: Array<IntArray>,
+           row: Int
+): IntArray {
+    return IntArray(board.size) {col -> board[row][col]}
+}
+
 // Helper to get a sub-grid as an array
 fun getSubGrid(board: Array<IntArray>,
                startRow: Int,
-               startCol: Int, size: Int
+               startCol: Int,
+               size: Int
 ): IntArray {
     val subGrid = mutableListOf<Int>()
     for (row in startRow until startRow + size) {
@@ -591,6 +611,38 @@ fun isValidMove(board: Array<IntArray>,
     }
     return true
 }
+
+fun getSubgridStart(row: Int, col: Int, subgridSize: Int = 3): Pair<Int, Int> {
+    val startRow = (row / subgridSize) * subgridSize
+    val startCol = (col / subgridSize) * subgridSize
+    return Pair(startRow, startCol)
+}
+
+fun checkInput(
+    board: Array<IntArray>,
+    row: Int,
+    col: Int,
+    num: Int
+): Boolean {
+    val (startRow, startCol) = getSubgridStart(row, col)
+
+    // Filter out the cell at (row, col) in the current row, column, and subgrid
+    val currentRow = getRow(board, row).filterIndexed { index, _ -> index != col }
+    val currentColumn = getColumn(board, col).filterIndexed { index, _ -> index != row }
+    val currentSubgrid = getSubGrid(board, startRow, startCol, 3).filterIndexed { index, _ ->
+        val subgridRow = startRow + index / 3
+        val subgridCol = startCol + index % 3
+        !(subgridRow == row && subgridCol == col)
+    }
+
+    return when (num) {
+        in currentRow -> false
+        in currentColumn -> false
+        in currentSubgrid -> false
+        else -> true
+    }
+}
+
 
 fun findDuplicatePositions(
     index: Int,
