@@ -8,7 +8,7 @@
     android:gravity="center"
     android:padding="16dp"
     android:background="@drawable/green_background"
-    tools:context=".MainActivity">
+    tools:context="my.sudoku.game.HomeActivity">
 
     <Chronometer
         android:id="@+id/chronometer"

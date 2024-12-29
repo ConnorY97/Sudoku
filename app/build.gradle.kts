@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.sudoku"
+    namespace = "my.sudoku.game"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.sudoku"
+        applicationId = "my.sudoku.game"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
