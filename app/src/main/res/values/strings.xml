@@ -22,4 +22,7 @@
     <string name="sub_menu_save_game">Save Game</string>
     <string name="sub_menu_main_manu">Main Menu</string>
     <string name="sub_menu_exit">Exit</string>
+    <string name="no_save_games_available">No saved games available</string>
+    <string name="clear_all">Clear All</string>
+    <string name="time">Time: %1$s | %2$s</string>
 </resources>
