@@ -1,13 +1,11 @@
 Sudoku revisions
 
 **Feature**
-- Added settings sub context menu
-    Currently this only holds the error checking options but it can be easily expanded.
+- Ability to delete all or individual saves
 
 **To Do**
 - Add dynamic back grounds and the option to have a solid background
 - UI pass
 - Improve buttons
-- Show if the board is finished or not in the load screen
 - Stats
 - Make `gameState` as the default way to interact with game objects
