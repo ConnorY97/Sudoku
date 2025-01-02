@@ -10,7 +10,7 @@
     <string name="load_game">Load Game</string>
     <string name="save_game">Save Game</string>
     <string name="title_activity_load">Load Activity</string>
-    <string name="select_saved_game">Select Saved Game</string>
+    <string name="saved_games">Saved Games</string>
     <string name="board_name_input">Enter Board Name</string>
     <string name="confirm_save">Confirm Save</string>
     <string name="Sudoku">Sudoku</string>
@@ -25,4 +25,5 @@
     <string name="no_save_games_available">No saved games available</string>
     <string name="clear_all">Clear All</string>
     <string name="time">Time: %1$s | %2$s</string>
+    <string name="back">Back</string>
 </resources>

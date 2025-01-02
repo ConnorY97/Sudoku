@@ -2,6 +2,7 @@ Sudoku revisions
 
 **Feature**
 - Ability to delete all or individual saves
+- Added navigation button to the load activity
 
 **To Do**
 - Add dynamic back grounds and the option to have a solid background

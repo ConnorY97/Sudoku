@@ -25,11 +25,21 @@ class LoadActivity : ComponentActivity() {
         emptyStateTextView = findViewById(R.id.emptyStateTextView)
         val clearAllButton: Button = findViewById(R.id.clearAllButton)
 
+        val returnButton: ImageButton = findViewById(R.id.backButton)
+
+
         loadSavedGames()
 
         // Set up Clear All button
         clearAllButton.setOnClickListener {
             showClearAllConfirmationDialog()
+        }
+
+        returnButton.setOnClickListener {
+            // Navigate to HomeActivity
+            val intent = Intent(this, HomeActivity::class.java)
+            startActivity(intent)
+            finish() // Close LoadActivity to prevent back navigation to it
         }
     }
 
