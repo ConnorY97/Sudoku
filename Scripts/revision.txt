@@ -3,6 +3,9 @@
 ### Feature
 - Updated functions to use `gameState` rather than passing boards and lists around
 
+### Fixes
+- Locked the app to portrait orientation
+
 ### To Do
 - Add dynamic back grounds and the option to have a solid background
 - Improve buttons

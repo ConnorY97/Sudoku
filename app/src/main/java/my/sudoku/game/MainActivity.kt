@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
 
         Log.i("onCreate", "Initializing UI")
         val (retrievedGrid, retrievedTimer, retrievedConfirmButton, retrievedBoardName) =
-            setUpUI(this, gameState.board, gameState.editableCells, gameState.elapsedTime)?.map { it } ?: throw IllegalStateException("UI setup failed")
+            setUpUI(this, gameState)?.map { it } ?: throw IllegalStateException("UI setup failed")
         if (retrievedGrid is GridLayout && retrievedTimer is Chronometer && retrievedConfirmButton is Button && retrievedBoardName is EditText) {
             sudokuGrid = retrievedGrid
             timer = retrievedTimer
@@ -198,15 +198,16 @@ fun toggleFeature(context: Context,
     Toast.makeText(context, if (item.isChecked) "Error Checking Enabled!" else "Error Checking Disabled!", Toast.LENGTH_SHORT).show()
 }
 
-fun isErrorCheckingEnabled(context: Context): Boolean {
+fun isErrorCheckingEnabled(
+    context: Context
+): Boolean {
     val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     return sharedPreferences.getBoolean(KEY_ERROR_CHECKING, false)
 }
 
-fun setUpUI(context: Context,
-            sudokuBoard: Array<IntArray>,
-            editableCells: MutableMap<Pair<Int, Int>, Boolean>,
-            elapsedTime: Long
+fun setUpUI(
+    context: Context,
+    gameState: GameState,
 ): List<View>? {
     if (context is Activity)
     {
@@ -221,13 +222,13 @@ fun setUpUI(context: Context,
         val timer: Chronometer = context.findViewById(R.id.chronometer)
         Log.i("setUpUI", "Timer created")
 
-        if (elapsedTime == Long.MAX_VALUE) {
+        if (gameState.elapsedTime == Long.MAX_VALUE) {
             // Start the timer
             timer.base = SystemClock.elapsedRealtime()
         }
         else
         {
-            timer.base = SystemClock.elapsedRealtime() - elapsedTime
+            timer.base = SystemClock.elapsedRealtime() - gameState.elapsedTime
         }
         timer.start()
         Log.i("setUpUI", "Timer Started")
@@ -244,7 +245,7 @@ fun setUpUI(context: Context,
                 // Save the game with the entered board name
                 val finalTime = SystemClock.elapsedRealtime() - timer.base
                 val success =
-                    saveGame(context, boardName, sudokuBoard, editableCells, finalTime)
+                    saveGame(context, boardName, gameState, finalTime)
                 if (success) {
                     if (FINISHED) {
                         //If the board is finished the we should return to the home screen
@@ -281,7 +282,9 @@ fun setUpUI(context: Context,
     return null
 }
 
-private fun hideKeyboard(context: Context) {
+fun hideKeyboard(
+    context: Context
+) {
     val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     // Get the root view of the activity
     val view = (context as Activity).findViewById<View>(android.R.id.content)
@@ -289,7 +292,9 @@ private fun hideKeyboard(context: Context) {
     inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
 }
 
-fun showSaveScreen(context: Context) {
+fun showSaveScreen(
+    context: Context
+) {
     if (context is Activity) {
         val confirmSaveButton = context.findViewById<Button>(R.id.confirmSaveButton)
         val boardNameInput = context.findViewById<EditText>(R.id.boardNameInput)
@@ -303,7 +308,8 @@ fun showSaveScreen(context: Context) {
     }
 }
 
-fun areAllCellsFilled(sudokuGrid: GridLayout
+fun areAllCellsFilled(
+    sudokuGrid: GridLayout
 ): Boolean {
     for (row in 0 until GRID_SIZE) {
         for (col in 0 until GRID_SIZE) {
@@ -316,9 +322,10 @@ fun areAllCellsFilled(sudokuGrid: GridLayout
     return true // All cells are filled
 }
 
-fun initializeSudokuGrid(context: Context,
-                         sudokuGrid: GridLayout,
-                         gameState: GameState
+fun initializeSudokuGrid(
+    context: Context,
+    sudokuGrid: GridLayout,
+    gameState: GameState
 ) {
     for (row in 0 until 9) {
         for (col in 0 until 9) {
@@ -344,7 +351,7 @@ fun initializeSudokuGrid(context: Context,
 
                 if (isEditable) {
                     setOnClickListener {
-                        selectCell(row, col, sudokuGrid)
+                        selectCell(row, col, sudokuGrid, context)
                     }
                 }
 
@@ -368,10 +375,11 @@ fun initializeSudokuGrid(context: Context,
     }
 }
 
-private fun initializeNumberButtons(context: Context,
-                                    numberGrid: GridLayout,
-                                    sudokuGrid: GridLayout,
-                                    gameState: GameState
+fun initializeNumberButtons(
+    context: Context,
+    numberGrid: GridLayout,
+    sudokuGrid: GridLayout,
+    gameState: GameState
 ) {
     for (number in 1..9) {
         val button = Button(context).apply {
@@ -419,17 +427,18 @@ private fun initializeNumberButtons(context: Context,
     }
 }
 
-private fun onNumberClicked(context: Context,
-                            number: Int,
-                            sudokuGrid: GridLayout,
-                            gameState: GameState
+fun onNumberClicked(
+    context: Context,
+    number: Int,
+    sudokuGrid: GridLayout,
+    gameState: GameState
 ) {
     SELECTED_CELL?.let { (row, col) ->
         val cellIndex = row * 9 + col
         val selectedCell = sudokuGrid.getChildAt(cellIndex) as? EditText
 
         // Simulate inputting the number into the Sudoku cell
-        selectedCell?.setBackgroundColor(Color.LTGRAY)
+        selectedCell?.setBackgroundColor(ContextCompat.getColor(context, R.color.cell_background))
 
         // Update the cell text
         selectedCell?.setText(if (number != 0) number.toString() else "")
@@ -446,21 +455,25 @@ private fun onNumberClicked(context: Context,
     }
 }
 
-private fun selectCell(row: Int,
-                       col: Int,
-                       sudokuGrid: GridLayout,
+private fun selectCell(
+    row: Int,
+    col: Int,
+    sudokuGrid: GridLayout,
+    context: Context
 ) {
-    clearCellHighlights(sudokuGrid)
+    clearCellHighlights(sudokuGrid, context)
     val cellIndex = row * 9 + col
     val selectedView = sudokuGrid.getChildAt(cellIndex)
     selectedView.setBackgroundColor(Color.YELLOW)
     SELECTED_CELL = Pair(row, col)
 }
 
-private fun clearCellHighlights(sudokuGrid: GridLayout
+private fun clearCellHighlights(
+    sudokuGrid: GridLayout,
+    context: Context
 ) {
     for (i in 0 until sudokuGrid.childCount) {
-        sudokuGrid.getChildAt(i).setBackgroundColor(Color.LTGRAY)
+        sudokuGrid.getChildAt(i).setBackgroundColor(ContextCompat.getColor(context, R.color.cell_background))
     }
 }
 
@@ -505,9 +518,10 @@ fun showCorrectCells(
 }
 
 // Game Logic
-fun generatePuzzle(context: Context,
-                   difficulty: String,
-                   editableCells: MutableMap<Pair<Int, Int>, Boolean>
+fun generatePuzzle(
+    context: Context,
+    difficulty: String,
+    editableCells: MutableMap<Pair<Int, Int>, Boolean>
 ): Array<IntArray> {
     Log.i("generatePuzzle","Started generating puzzle")
     // Generate and return a new Sudoku puzzle
@@ -541,7 +555,8 @@ fun generatePuzzle(context: Context,
     return grid
 }
 
-fun logBoard(board: Array<IntArray>
+fun logBoard(
+    board: Array<IntArray>
 ) {
     val boardString = StringBuilder()
     for (row in board) {
@@ -553,7 +568,8 @@ fun logBoard(board: Array<IntArray>
     Log.i("logBoard", boardString.toString())
 }
 
-fun fillBoard(board: Array<IntArray>
+fun fillBoard(
+    board: Array<IntArray>
 ): Boolean {
     for (row in 0 until 9) {
         for (col in 0 until 9) {
@@ -577,9 +593,10 @@ fun fillBoard(board: Array<IntArray>
     return true
 }
 
-fun createPuzzle(board: Array<IntArray>,
-                 difficulty: String,
-                 editableCells: MutableMap<Pair<Int, Int>, Boolean>
+fun createPuzzle(
+    board: Array<IntArray>,
+    difficulty: String,
+    editableCells: MutableMap<Pair<Int, Int>, Boolean>
 ) {
     val chanceToBeEmpty = when (difficulty) {
         "easy" -> 0.1 // 20% cells empty
@@ -599,7 +616,8 @@ fun createPuzzle(board: Array<IntArray>,
     }
 }
 
-fun validateBoard(board: Array<IntArray>
+fun validateBoard(
+    board: Array<IntArray>
 ): Boolean {
     val subGridSize = sqrt(GRID_SIZE.toDouble()).toInt() // 3 for a 9x9 board
 
@@ -622,7 +640,8 @@ fun validateBoard(board: Array<IntArray>
 }
 
 // Helper to check if all numbers in an array are unique (ignores zeros)
-fun isUnique(array: IntArray
+fun isUnique(
+    array: IntArray
 ): Boolean {
     val seen = mutableSetOf<Int>()
     for (num in array) {
@@ -634,22 +653,26 @@ fun isUnique(array: IntArray
 }
 
 // Helper to get a column as an array
-fun getColumn(board: Array<IntArray>, col: Int
+fun getColumn(
+    board: Array<IntArray>,
+    col: Int
 ): IntArray {
     return IntArray(board.size) { row -> board[row][col] }
 }
 
-fun getRow(board: Array<IntArray>,
-           row: Int
+fun getRow(
+    board: Array<IntArray>,
+    row: Int
 ): IntArray {
     return IntArray(board.size) {col -> board[row][col]}
 }
 
 // Helper to get a sub-grid as an array
-fun getSubGrid(board: Array<IntArray>,
-               startRow: Int,
-               startCol: Int,
-               size: Int
+fun getSubGrid(
+    board: Array<IntArray>,
+    startRow: Int,
+    startCol: Int,
+    size: Int
 ): IntArray {
     val subGrid = mutableListOf<Int>()
     for (row in startRow until startRow + size) {
@@ -661,10 +684,11 @@ fun getSubGrid(board: Array<IntArray>,
 }
 
 // Check if placing a number is valid
-fun isValidMove(board: Array<IntArray>,
-                row: Int,
-                col: Int,
-                num: Int
+fun isValidMove(
+    board: Array<IntArray>,
+    row: Int,
+    col: Int,
+    num: Int
 ): Boolean {
     for (i in 0 until 9) {
         if (board[row][i] == num || board[i][col] == num) {
@@ -677,7 +701,11 @@ fun isValidMove(board: Array<IntArray>,
     return true
 }
 
-fun getSubgridStart(row: Int, col: Int, subgridSize: Int = 3): Pair<Int, Int> {
+fun getSubgridStart(
+    row: Int,
+    col: Int,
+    subgridSize: Int = 3
+): Pair<Int, Int> {
     val startRow = (row / subgridSize) * subgridSize
     val startCol = (col / subgridSize) * subgridSize
     return Pair(startRow, startCol)
@@ -708,7 +736,6 @@ fun checkInput(
     }
 }
 
-
 fun findDuplicatePositions(
     index: Int,
     array: IntArray,
@@ -737,7 +764,6 @@ fun findDuplicatePositions(
 
     return duplicates
 }
-
 
 fun findDuplicatePositionInSubGrid(
     startRow: Int,
@@ -772,7 +798,6 @@ fun findDuplicatePositionInSubGrid(
 
     return duplicates
 }
-
 
 fun confirmEditableCells(
     editableCells: MutableMap<Pair<Int, Int>, Boolean>,
@@ -825,10 +850,10 @@ fun confirmEditableCells(
 
 // Save game state
 fun saveGame(
-    context: Context, boardName: String,
-    board: Array<IntArray>,
-    editableCells: Map<Pair<Int, Int>, Boolean>,
-    elapsedTime: Long,
+    context: Context,
+    boardName: String,
+    gameState: GameState,
+    finalTime: Long
 ): Boolean {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
@@ -847,11 +872,11 @@ fun saveGame(
 
     // Save board and editable cells
     val gson = Gson()
-    editor.putString("${boardName}_board", gson.toJson(board))
-    editor.putString("${boardName}_editableCells", gson.toJson(editableCells))
+    editor.putString("${boardName}_board", gson.toJson(gameState.board))
+    editor.putString("${boardName}_editableCells", gson.toJson(gameState.editableCells))
 
     // Save timer
-    editor.putLong("${boardName}_elapsedTime", elapsedTime)
+    editor.putLong("${boardName}_elapsedTime", finalTime)
 
     // Save whether the game is finished
     editor.putBoolean("${boardName}_isFinished", FINISHED)
