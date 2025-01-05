@@ -27,12 +27,22 @@
     </LinearLayout>
 
     <Button
+        android:id="@+id/playButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:drawableStart="@android:drawable/ic_menu_view"
+        android:padding="12dp"
+        android:hint="@string/play_button"
+        android:background="?android:attr/selectableItemBackground" />
+
+    <Button
         android:id="@+id/deleteButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginStart="16dp"
         android:drawableStart="@android:drawable/ic_menu_delete"
         android:padding="12dp"
+        android:hint="@string/delete_button"
         android:background="?android:attr/selectableItemBackground" />
-
 </LinearLayout>

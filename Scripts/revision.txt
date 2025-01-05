@@ -1,12 +1,12 @@
-Sudoku revisions
+# Sudoku revisions
 
-**Feature**
-- Ability to delete all or individual saves
-- Added navigation button to the load activity
+### Feature
+- Improved number input
+    Now using a number grid rather than the keyboard
+- Fixed loading not working by adding a load button to the list view
 
-**To Do**
+### To Do
 - Add dynamic back grounds and the option to have a solid background
-- UI pass
 - Improve buttons
 - Stats
 - Make `gameState` as the default way to interact with game objects

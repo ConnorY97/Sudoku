@@ -4,25 +4,25 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.text.Editable
-import android.text.InputFilter
 import android.text.InputType
-import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.Chronometer
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import java.util.Locale
 import kotlin.math.sqrt
@@ -33,6 +33,8 @@ const val GRIDSIZE = 9
 var FINISHED = false
 const val PREFS_NAME = "AppPreferences"
 const val KEY_ERROR_CHECKING = "IS_ERROR_CHECKING_ENABLED"
+var SELECTED_CELL: Pair<Int, Int>? = null
+const val NUMBER_MARGIN_BUFFER = 180
 
 class MainActivity : ComponentActivity() {
     // Variables
@@ -43,13 +45,16 @@ class MainActivity : ComponentActivity() {
     private lateinit var confirmSaveButton: Button
     private lateinit var boardNameInput: EditText
     private lateinit var sudokuGrid: GridLayout
-
+    private lateinit var numberGrid: GridLayout
 
     // Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.i("onCreate", "Entered main activity")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Find the number Grid
+        numberGrid = findViewById(R.id.numberGrid)
 
         Log.i("onCreate", "Error checking is ${if (isErrorCheckingEnabled(this)) "Error checking Enabled" else "Error checking is disabled"}")
         // Get the game mode from the Intent (null check instead of empty string check)
@@ -106,8 +111,12 @@ class MainActivity : ComponentActivity() {
             boardNameInput = retrievedBoardName
             Log.i("onCreate", "Successfully initialized UI")
 
-            initializeGrid(this, sudokuGrid, sudokuBoard, editableCells, timer)
+            //initializeGrid(this, sudokuGrid, sudokuBoard, editableCells, timer)
+            initializeSudokuGrid(this, sudokuGrid, sudokuBoard, editableCells)
         }
+
+        // Once everything has been initialized set up the number grid
+        initializeNumberButtons(this, numberGrid, sudokuGrid, sudokuBoard, editableCells)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -128,6 +137,7 @@ class MainActivity : ComponentActivity() {
                 // Handle Save Game action
                 Toast.makeText(this, "Save Game clicked", Toast.LENGTH_SHORT).show()
                 sudokuGrid.visibility = View.GONE
+                numberGrid.visibility = View.GONE
                 timer.visibility = View.INVISIBLE
                 boardNameInput.visibility = View.VISIBLE
                 confirmSaveButton.visibility = View.VISIBLE
@@ -190,6 +200,7 @@ fun setUpUI(context: Context,
         val confirmSaveButton = context.findViewById<Button>(R.id.confirmSaveButton)
         val boardNameInput = context.findViewById<EditText>(R.id.boardNameInput)
         val sudokuGrid = context.findViewById<GridLayout>(R.id.sudokuGrid)
+        val numberGrid = context.findViewById<GridLayout>(R.id.numberGrid)
         Log.i("setUpUI", "Buttons created")
 
         // Timer
@@ -236,9 +247,11 @@ fun setUpUI(context: Context,
                         boardNameInput.visibility = View.GONE
                         confirmSaveButton.visibility = View.GONE
 
-                        // Hide the board while we take input
+                        // Show the board and buttons again
                         sudokuGrid.visibility = View.VISIBLE
+                        numberGrid.visibility = View.VISIBLE
 
+                        hideKeyboard(context)
                         // Clear the input field for future use
                         boardNameInput.text.clear()
                     }
@@ -254,15 +267,25 @@ fun setUpUI(context: Context,
     return null
 }
 
+private fun hideKeyboard(context: Context) {
+    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    // Get the root view of the activity
+    val view = (context as Activity).findViewById<View>(android.R.id.content)
+    // Hide the keyboard from the current window
+    inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+}
+
 fun showSaveScreen(context: Context) {
     if (context is Activity) {
         val confirmSaveButton = context.findViewById<Button>(R.id.confirmSaveButton)
         val boardNameInput = context.findViewById<EditText>(R.id.boardNameInput)
         val sudokuGrid = context.findViewById<GridLayout>(R.id.sudokuGrid)
+        val numberGrid = context.findViewById<GridLayout>(R.id.numberGrid)
 
         confirmSaveButton.visibility = View.VISIBLE
         boardNameInput.visibility = View.VISIBLE
         sudokuGrid.visibility = View.GONE
+        numberGrid.visibility = View.GONE
     }
 }
 
@@ -279,122 +302,154 @@ fun areAllCellsFilled(sudokuGrid: GridLayout
     return true // All cells are filled
 }
 
-fun initializeGrid(
-    context: Context,
-    sudokuGrid: GridLayout,
-    board: Array<IntArray>,
-    editableCells: MutableMap<Pair<Int, Int>, Boolean>,
-    timer: Chronometer
+fun initializeSudokuGrid(context: Context,
+                         sudokuGrid: GridLayout,
+                         board: Array<IntArray>,
+                         editableCells: MutableMap<Pair<Int, Int>, Boolean>
 ) {
-    Log.i("initializeGrid", "Initializing")
-    // Set up the grid for Sudoku
+    for (row in 0 until 9) {
+        for (col in 0 until 9) {
+            val isEditable = Pair(row,col) in editableCells
+            val cell = EditText(context).apply {
+                layoutParams = GridLayout.LayoutParams().apply {
+                    width = 100
+                    height = 100
+                    columnSpec = GridLayout.spec(col)
+                    rowSpec = GridLayout.spec(row)
+                    setMargins(
+                        if (col % 3 == 0 && col != 0) 4 else 1,
+                        if (row % 3 == 0 && row != 0) 4 else 1,
+                        1,
+                        1
+                    )
+                }
+                gravity = Gravity.CENTER
+                textAlignment = EditText.TEXT_ALIGNMENT_CENTER
+                setBackgroundColor(ContextCompat.getColor(context, R.color.cell_background))
+                setTextColor(Color.BLACK)
+                setPadding(10, 10, 10, 10)
 
-    for (row in 0 until GRIDSIZE) {
-        for (col in 0 until GRIDSIZE) {
-            val cell = EditText(context)
-            cell.layoutParams = GridLayout.LayoutParams().apply {
-                width = 100
-                height = 100
-                columnSpec = GridLayout.spec(col)
-                rowSpec = GridLayout.spec(row)
-                setMargins(
-                    if (col % 3 == 0 && col != 0) 4 else 1,
-                    if (row % 3 == 0 && row != 0) 4 else 1,
-                    1,
-                    1
-                )
+                if (isEditable) {
+                    setOnClickListener {
+                        selectCell(row, col, sudokuGrid)
+                    }
+                }
+
+                // Make sure the cells cannot be interacted with a keyboard
+                isFocusableInTouchMode = false
+                isFocusable = false
+                inputType = InputType.TYPE_NULL
             }
-
-            cell.textAlignment = EditText.TEXT_ALIGNMENT_CENTER
-            cell.setBackgroundResource(R.color.cell_background)
-            cell.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_NORMAL
-            cell.maxLines = 1
-            cell.filters = arrayOf(InputFilter.LengthFilter(1))
-            cell.gravity = Gravity.CENTER
-            cell.setPadding(10, 10, 10, 10)
-
-            // Populate the cell based on puzzleBoard
             val number = board[row][col]
             if (number != 0) {
                 cell.setText(String.format(Locale.getDefault(), "%d", number))
+                if (!isEditable) {
+                    cell.setTypeface(null, Typeface.BOLD)
+                }
             } else {
                 cell.setText("")
             }
 
-            // Set cell interactivity based on interactableBoard
-            val isEditable = Pair(row, col) in editableCells
-
-            if (isEditable) {
-                cell.isFocusableInTouchMode = true
-
-                // Add TextWatcher for user input
-                cell.addTextChangedListener(object : TextWatcher {
-                    override fun beforeTextChanged(
-                        s: CharSequence?,
-                        start: Int,
-                        count: Int,
-                        after: Int
-                    ) {
-                    }
-
-                    override fun onTextChanged(
-                        s: CharSequence?,
-                        start: Int,
-                        before: Int,
-                        count: Int
-                    ) {
-                    }
-
-                    override fun afterTextChanged(s: Editable?) {
-                        try {
-                            // Retrieve input and convert to integer
-                            val inputText = s?.toString() ?: ""
-                            val inputNumber = inputText.toIntOrNull() ?: 0 // Default to 0 for invalid input
-
-                            // Update the board with user input
-                            board[row][col] = inputNumber
-
-                            // Check if all cells are filled
-                            if (areAllCellsFilled(sudokuGrid)) {
-                                // Individually validate the cells
-                                val problematicCells = confirmEditableCells(editableCells, board)
-
-                                Toast.makeText(context, "Board Filled", Toast.LENGTH_SHORT).show()
-
-                                // Provide visual feedback for valid and invalid cells
-                                if (showCorrectCells(sudokuGrid, editableCells, problematicCells)) {
-                                    // This board is finished
-                                    FINISHED = true
-                                    timer.stop()
-                                    showSaveScreen(context)
-                                }
-                            }
-
-                            // If the user wants error checking on
-                            if (isErrorCheckingEnabled(context) && inputText != "") {
-                                if (checkInput(board, row, col, inputNumber)) {
-                                    cell.setBackgroundColor(Color.GREEN)
-                                } else {
-                                    cell.setBackgroundColor(Color.RED)
-                                }
-
-                                Handler(Looper.getMainLooper()).postDelayed({
-                                    cell.setBackgroundResource(R.color.cell_background) // Reset to default background
-                                }, 250) // Adjust the delay as necessary
-                            }
-                        } catch (e: Exception) {
-                            Log.e("initializeGrid", "Error updating cell ($row, $col): ${e.message}")
-                        }
-                    }
-
-                })
-            } else {
-                cell.isFocusable = false
-                cell.isClickable = false
-                cell.setTypeface(null, android.graphics.Typeface.BOLD)
-            }
             sudokuGrid.addView(cell)
         }
+    }
+}
+
+private fun initializeNumberButtons(context: Context,
+                                    numberGrid: GridLayout,
+                                    sudokuGrid: GridLayout,
+                                    sudokuBoard: Array<IntArray>,
+                                    editableCells: MutableMap<Pair<Int, Int>, Boolean>
+) {
+    for (number in 1..9) {
+        val button = Button(context).apply {
+            text = String.format(Locale.getDefault(), "%d", number)
+            layoutParams = GridLayout.LayoutParams().apply {
+                width = 200
+                height = 200
+                setMargins(4, 4, 4, 4) // Default margins between buttons
+
+                // Adjust margins for the first, fourth, and seventh buttons
+                when (number) {
+                    1 -> setMargins(NUMBER_MARGIN_BUFFER, 4, 4, 4) // Push the first button to the right
+                    4 -> setMargins(NUMBER_MARGIN_BUFFER, 4, 4, 4) // Adjust the fourth button
+                    7 -> setMargins(NUMBER_MARGIN_BUFFER, 4, 4, 4) // Adjust the seventh button
+                }
+                gravity = Gravity.CENTER
+            }
+
+            setOnClickListener {
+                onNumberClicked(context, number, sudokuGrid, sudokuBoard, editableCells)
+
+                if (isErrorCheckingEnabled(context)) {
+                    SELECTED_CELL?.let { (row, col) ->
+                        val cellIndex = row * 9 + col
+                        if (checkInput(sudokuBoard, row, col, number)) {
+                            (sudokuGrid.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(
+                                Color.GREEN
+                            )
+                        } else {
+                            (sudokuGrid.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(
+                                Color.RED
+                            )
+                        }
+
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            (sudokuGrid.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(ContextCompat.getColor(context, R.color.cell_background))
+                            // Reset to default background
+                        }, 250) // Adjust the delay as necessary
+                    }
+                }
+            }
+        }
+
+        numberGrid.addView(button)
+    }
+}
+
+private fun onNumberClicked(context: Context,
+                            number: Int,
+                            sudokuGrid: GridLayout,
+                            sudokuBoard: Array<IntArray>,
+                            editableCells: MutableMap<Pair<Int, Int>, Boolean>,
+) {
+    SELECTED_CELL?.let { (row, col) ->
+        val cellIndex = row * 9 + col
+        val selectedCell = sudokuGrid.getChildAt(cellIndex) as? EditText
+
+        // Simulate inputting the number into the Sudoku cell
+        selectedCell?.setBackgroundColor(Color.LTGRAY)
+
+        // Update the cell text
+        selectedCell?.setText(if (number != 0) number.toString() else "")
+        sudokuBoard[row][col] = number
+    } ?: Toast.makeText(context, "Select a cell first!", Toast.LENGTH_SHORT).show()
+
+    if (areAllCellsFilled(sudokuGrid)) {
+        val problematicCells = confirmEditableCells(editableCells, sudokuBoard)
+
+        if (showCorrectCells(sudokuGrid, editableCells, problematicCells)) {
+            FINISHED = true
+            showSaveScreen(context)
+        }
+    }
+}
+
+private fun selectCell(row: Int,
+                       col: Int,
+                       sudokuGrid: GridLayout,
+) {
+    clearCellHighlights(sudokuGrid)
+    val cellIndex = row * 9 + col
+    val selectedView = sudokuGrid.getChildAt(cellIndex)
+    selectedView.setBackgroundColor(Color.YELLOW)
+    SELECTED_CELL = Pair(row, col)
+}
+
+private fun clearCellHighlights(sudokuGrid: GridLayout
+) {
+    for (i in 0 until sudokuGrid.childCount) {
+        sudokuGrid.getChildAt(i).setBackgroundColor(Color.LTGRAY)
     }
 }
 
