@@ -115,11 +115,8 @@ class SudokuTest {
 
         // Arrange
         val boardName = "TestBoard"
-        val gridSize = 9
-        val board = Array(gridSize) { IntArray(gridSize) { 0 } }
-        val editableCells = mapOf(Pair(0, 0) to true, Pair(1, 1) to false)
         val elapsedTime = 120L
-
+        val gameState = GameState()
         val savedBoards = mutableSetOf<String>()
 
         // Mock retrieving saved boards
@@ -127,13 +124,13 @@ class SudokuTest {
             .thenReturn(savedBoards)
 
         // Act
-        val result = saveGame(mockContext, boardName, board, editableCells, elapsedTime)
+        val result = saveGame(mockContext, boardName, gameState, elapsedTime)
 
         // Assert
         assertEquals("Failed to save a board", true, result)
         verify(mockEditor).putStringSet("SavedBoards", setOf(boardName))
-        verify(mockEditor).putString("${boardName}_board", gson.toJson(board))
-        verify(mockEditor).putString("${boardName}_editableCells", gson.toJson(editableCells))
+        verify(mockEditor).putString("${boardName}_board", gson.toJson(gameState.board))
+        verify(mockEditor).putString("${boardName}_editableCells", gson.toJson(gameState.editableCells))
         verify(mockEditor).putLong("${boardName}_elapsedTime", elapsedTime)
         verify(mockEditor).apply()
     }
@@ -146,9 +143,7 @@ class SudokuTest {
 
         // Arrange
         val boardName = "TestBoard"
-        val gridSize = 9
-        val board = Array(gridSize) { IntArray(gridSize) { 0 } }
-        val editableCells = mapOf(Pair(0, 0) to true, Pair(1, 1) to false)
+        val gameState = GameState()
         val elapsedTime = 120L
 
         val savedBoards = mutableSetOf(boardName) // Pretend the board already exists
@@ -158,7 +153,7 @@ class SudokuTest {
             .thenReturn(savedBoards)
 
         // Act
-        val result = saveGame(mockContext, boardName, board, editableCells, elapsedTime)
+        val result = saveGame(mockContext, boardName, gameState, elapsedTime)
 
         // Assert
         assertEquals("Failed to save a board", false, result) // Saving should fail
@@ -191,7 +186,7 @@ class SudokuTest {
 
         // Assert
         assertNotNull("Load failed", game) // Ensure result is not null
-        assertEquals("Failed to retrieve board", board.size, game.board?.size) // Verify board loaded
+        assertEquals("Failed to retrieve board", board.size, game.board.size) // Verify board loaded
         assertEquals("Failed to retrieve editableCells", editableCells, game.editableCells)  // Verify editable cells loaded
         assertEquals("Failed to retrieve elapsed time", elapsedTime, game.elapsedTime)     // Verify elapsed time loaded
     }
