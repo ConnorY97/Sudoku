@@ -22,19 +22,19 @@ class SudokuTest {
 
     @Test
     fun fillBoardTest() {
-        assertTrue("Failed to successfully fill a board", fillBoard(Array(GRIDSIZE) { IntArray(GRIDSIZE) { 0 } }))
+        assertTrue("Failed to successfully fill a board", fillBoard(Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }))
     }
 
     @Test
     fun validateBoardTest() {
-        val board = Array(GRIDSIZE) { IntArray(GRIDSIZE) { 0 } }
+        val board = Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }
         fillBoard(board)
         assertTrue("Failed to validate the board", validateBoard(board))
     }
 
     @Test
     fun generatePuzzleTest() {
-        val board = Array(GRIDSIZE) { IntArray(GRIDSIZE) { 0 } }
+        val board = Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }
         fillBoard(board)
         assertTrue("Failed to validate the board", validateBoard(board))
         val editableCells: MutableMap<Pair<Int, Int>, Boolean> = mutableMapOf()
@@ -44,7 +44,7 @@ class SudokuTest {
 
     @Test
     fun findDuplicatesInRowAndColTest() {
-        val row = IntArray(GRIDSIZE) { it }
+        val row = IntArray(GRID_SIZE) { it }
         assertTrue(
             "Failed to parse valid row",
             findDuplicatePositions(0, row, true).isEmpty()
@@ -71,7 +71,7 @@ class SudokuTest {
 
     @Test
     fun findDuplicatesInSubGridTest() {
-        val board = Array(GRIDSIZE) { IntArray(GRIDSIZE) { 0 } }
+        val board = Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }
 
         fillBoard(board)
 

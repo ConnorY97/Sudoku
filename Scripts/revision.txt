@@ -1,12 +1,9 @@
 # Sudoku revisions
 
 ### Feature
-- Improved number input
-    Now using a number grid rather than the keyboard
-- Fixed loading not working by adding a load button to the list view
+- Updated functions to use `gameState` rather than passing boards and lists around
 
 ### To Do
 - Add dynamic back grounds and the option to have a solid background
 - Improve buttons
 - Stats
-- Make `gameState` as the default way to interact with game objects
