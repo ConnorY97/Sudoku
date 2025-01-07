@@ -1,10 +1,11 @@
 # Sudoku revisions
 
 ### Feature
-- Updated functions to use `gameState` rather than passing boards and lists around
+- Successfully ran instrument tests locally
 
-### Fixes
-- Locked the app to portrait orientation
+### Tests
+- Opening the app
+- Opening the load and game activities
 
 ### To Do
 - Add dynamic back grounds and the option to have a solid background

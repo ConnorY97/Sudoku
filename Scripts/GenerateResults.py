@@ -154,19 +154,26 @@ def convert_xml_to_json(xml_file_path, output_file_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Convert XML test results to JSON.")
-    parser.add_argument("xml_file", help="The input XML file containing test results.")
+    parser.add_argument("unit_tests_path", help="Path to the unit test xml")
+    parser.add_argument("instrument_test_path", help="Path to the instrument test xml")
     args = parser.parse_args()
     try:
         # Generate JSON data
 
-        json_output_file = "/home/connor/Documents/SudokuResults/results.json"
-        print(json_output_file)
+        unit_output_file = r"/home/connor/Documents/SudokuResults/results.json"
+        print(unit_output_file)
+        instrument_output_file = r"/home/connor/Documents/SudokuResults/instrument_results.json"
 
         # Ensure the output directories exist
-        os.makedirs(os.path.dirname(json_output_file), exist_ok=True)
-        print("Created file")
+        os.makedirs(os.path.dirname(unit_output_file), exist_ok=True)
+        print("Created unit file")
 
-        convert_xml_to_json(args.xml_file, json_output_file)
+        os.makedirs(os.path.dirname(instrument_output_file), exist_ok=True)
+        print("Created instrument file")
+
+        convert_xml_to_json(args.unit_tests_path, unit_output_file)
+
+        convert_xml_to_json(args.instrument_test_path, instrument_output_file)
 
     except FileNotFoundError as e:
         print(f"File not found with error: {e}")

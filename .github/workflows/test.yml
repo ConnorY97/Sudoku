@@ -36,25 +36,28 @@ jobs:
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S echo chmod 766 gradlew
 
-#      - name: Resync Project
-#        shell: bash
-#        run: |
-#          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew build
-
-      - name: Run Tests
+      - name: Run Unit Tests
         shell: bash
         run: |
           echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew test
         continue-on-error: true
 
+      - name: Run Instrument Tests
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S ./gradlew connectedAndroidTest
+        continue-on-error: true
+
       - name: Convert Results
         shell: bash
         run: |
-          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-com.example.sudoku.SudokuTest.xml"
+          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-com.example.sudoku.SudokuTest.xml" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/TEST-Pixel_9_Pro_API_35(AVD) - 15-_app-.xml"
 
       - name: Publish Results
         if: success()
-        run: npx github-actions-ctrf "/home/connor/Documents/SudokuResults/results.json"
+        run: |
+          npx ctrf merge "/home/connor/Documents/SudokuResults/"
+          npx github-actions-ctrf "/home/connor/Documents/SudokuResults/results.json"
 
       - name: Clean up
         if: steps.create_prop_file.outcome == 'success'
