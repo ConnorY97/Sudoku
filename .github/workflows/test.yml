@@ -51,7 +51,7 @@ jobs:
       - name: Convert Results
         shell: bash
         run: |
-          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-my.sudoku.game.SudokuTest.xml" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/TEST-Pixel_9_Pro_API_35(AVD) - 15-_app-.xml"
+          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-my.sudoku.game.SudokuTest.xml" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/TEST-emulator-554-15_app.xml"
 
       - name: Publish Results
         if: success()
