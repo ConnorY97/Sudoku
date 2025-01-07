@@ -51,7 +51,7 @@ jobs:
       - name: Convert Results
         shell: bash
         run: |
-          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-my.sudoku.game.SudokuTest.xml" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/TEST-emulator-554-15_app.xml"
+          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-my.sudoku.game.SudokuTest.xml" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/TEST-emulator-5554 - 15-_app-.xml"
 
       - name: Publish Results
         if: success()
@@ -59,7 +59,13 @@ jobs:
           npx ctrf merge "/home/connor/Documents/SudokuResults/"
           npx github-actions-ctrf "/home/connor/Documents/SudokuResults/ctrf-report.json"
 
-      - name: Clean up
+      - name: Clean Up Result Files
+        if: success()
+        shell: bash
+        run: |
+          echo ${{ secrets.SUDO_PASS }} | sudo -S rm "/home/connor/Documents/SudokuResults/ctrf-report.json"
+
+      - name: Clean Up Properties Files
         if: steps.create_prop_file.outcome == 'success'
         shell: bash
         run: |
