@@ -51,13 +51,13 @@ jobs:
       - name: Convert Results
         shell: bash
         run: |
-          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-com.example.sudoku.SudokuTest.xml" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/TEST-Pixel_9_Pro_API_35(AVD) - 15-_app-.xml"
+          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-my.sudoku.game.SudokuTest.xml" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/TEST-Pixel_9_Pro_API_35(AVD) - 15-_app-.xml"
 
       - name: Publish Results
         if: success()
         run: |
           npx ctrf merge "/home/connor/Documents/SudokuResults/"
-          npx github-actions-ctrf "/home/connor/Documents/SudokuResults/results.json"
+          npx github-actions-ctrf "/home/connor/Documents/SudokuResults/ctrf-report.json"
 
       - name: Clean up
         if: steps.create_prop_file.outcome == 'success'
