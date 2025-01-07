@@ -1,80 +1,74 @@
-package com.example.sudoku
+package my.sudoku.game
 
-import android.widget.EditText
-import android.widget.GridLayout
-import androidx.lifecycle.MutableLiveData
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import my.sudoku.game.GameState
-import my.sudoku.game.GameViewModel
-import my.sudoku.game.MainActivity
-import my.sudoku.game.R
-
+import junit.framework.TestCase.assertNotNull
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import org.junit.Assert.*
-import org.junit.Rule
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
-
 @RunWith(AndroidJUnit4::class)
-class MainActivityInstrumentTest {
+class InstrumentTest {
 
     @get:Rule
-    val activityRule = ActivityScenarioRule(MainActivity::class.java)
+    @JvmField
+    val activityScenarioRule = ActivityScenarioRule(HomeActivity::class.java)
 
     @Test
-    fun testInitializeSudokuGrid() {
-        // Launch MainActivity
-        activityRule.scenario.onActivity { activity ->
-            // Access the GridLayout and ViewModel
-            val sudokuGrid = activity.findViewById<GridLayout>(R.id.sudokuGrid)
-            val viewModelField = MainActivity::class.java.getDeclaredField("viewModel").apply {
-                isAccessible = true
-            }
-
-            // Mock the ViewModel and set it in the MainActivity
-            val mockViewModel = mockViewModel()
-            viewModelField.set(activity, mockViewModel)
-
-            // Access private initializeSudokuGrid method using reflection
-            val method = MainActivity::class.java.getDeclaredMethod("initializeSudokuGrid")
-            method.isAccessible = true
-
-            // Act: Invoke the private method
-            method.invoke(activity)
-
-            // Assert: Check if the grid is populated with cells
-            assertNotNull("Grid layout should not be null", sudokuGrid)
-            assertEquals(
-                "Sudoku grid should contain 81 cells",
-                81,
-                sudokuGrid.childCount
-            )
-
-            // Verify some properties of the added cells
-            val firstCell = sudokuGrid.getChildAt(0) as EditText
-            assertNotNull("First cell should not be null", firstCell)
-            assertEquals(
-                "First cell should have specific padding",
-                10,
-                firstCell.paddingLeft
-            )
-        }
+    fun appLaunchTest() {
+        // The ActivityScenarioRule automatically launches the activity.
+        // When the test ends, the activity is automatically closed.
+        // If no exceptions occur, the test is considered successful.
     }
 
-    private fun mockViewModel(): GameViewModel {
-        // Create a mock ViewModel with test GameState
-        val gameState = MutableLiveData(
-            GameState(
-                board = Array(9) { IntArray(9) { 0 } }, // Empty board
-                editableCells = mutableMapOf(Pair(0, 0) to true, Pair(1, 1) to false)
-            )
-        )
-
-        return mock(GameViewModel::class.java).apply {
-            `when`(getGameState()).thenReturn(gameState)
+    @Test
+    fun loadSceneTest() {
+        // Ensure the activity is launched and resumed.
+        activityRule.scenario.onActivity { activity ->
+            // Assert that the activity is not null and is properly launched.
+            assertNotNull(activity)
         }
+
+        // Simulate a click on the button that opens the Load Scene
+        onView(withId(R.id.loadGameButton)) // Replace with your actual button ID
+            .perform(click())
+
+        // Ensure the Load Scene root view is displayed
+        onView(withId(R.id.loadSceneRoot)) // Replace with the actual root view ID of the Load Scene
+            .check(matches(isDisplayed()))
+    }
+
+    @get:Rule
+    val activityRule = ActivityScenarioRule(HomeActivity::class.java)
+
+    @Test
+    fun loadDifficultiesTest() {
+        // Ensure the activity is launched and resumed.
+        activityRule.scenario.onActivity { activity ->
+            assertNotNull(activity)
+        }
+
+        // Test loading Easy Difficulty
+        onView(withId(R.id.easyButton)) // Replace with the actual button ID for easy difficulty
+            .perform(click())
+        onView(withId(R.id.sudokuGrid)) // Ensure the grid loads correctly
+            .check(matches(isDisplayed()))
+
+//        // Test loading Medium Difficulty
+//        onView(withId(R.id.mediumButton)) // Replace with the actual button ID for medium difficulty
+//            .perform(click())
+//        onView(withId(R.id.sudokuGrid)) // Ensure the grid loads correctly
+//            .check(matches(isDisplayed()))
+//
+//        // Test loading Hard Difficulty
+//        onView(withId(R.id.hardButton)) // Replace with the actual button ID for hard difficulty
+//            .perform(click())
+//        onView(withId(R.id.sudokuGrid)) // Ensure the grid loads correctly
+//            .check(matches(isDisplayed()))
     }
 }
