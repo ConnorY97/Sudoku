@@ -45,31 +45,33 @@ data class GameState(
     var editableCells: MutableMap<Pair<Int, Int>, Boolean> = mutableMapOf(),
     var elapsedTime: Long = 0L,
     var finished: Boolean = false
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as GameState
+
+        if (!board.contentDeepEquals(other.board)) return false
+        if (editableCells != other.editableCells) return false
+        if (elapsedTime != other.elapsedTime) return false
+        if (finished != other.finished) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = board.contentDeepHashCode()
+        result = 31 * result + editableCells.hashCode()
+        result = 31 * result + elapsedTime.hashCode()
+        result = 31 * result + finished.hashCode()
+        return result
+    }
+}
 
 // ViewModel for managing game state
 class GameViewModel : ViewModel() {
-    private val selectedCell: MutableLiveData<Pair<Int, Int>?> = MutableLiveData(null)
-    private val isGameFinished: MutableLiveData<Boolean> = MutableLiveData(false)
     private val gameState: MutableLiveData<GameState> = MutableLiveData(GameState())
-
-    fun updateSelectedCell(row: Int, col: Int) {
-        selectedCell.value = Pair(row, col)
-    }
-
-    fun markGameAsFinished() {
-        isGameFinished.value = true
-    }
-
-    fun getSelectedCell(
-    ): MutableLiveData<Pair<Int, Int>?> {
-        return selectedCell
-    }
-
-    fun getIsGameFinished(
-    ): MutableLiveData<Boolean> {
-        return isGameFinished
-    }
 
     fun getGameState(
     ): MutableLiveData<GameState> {
