@@ -177,7 +177,7 @@ if __name__ == "__main__":
             print(f"Could not find unit test output file at {args.unit_tests_path}")
 
         if (os.path.exists(args.instrument_test_path)):
-            convert_xml_to_json(args.instrument_test_path, unit_output_file)
+            convert_xml_to_json(args.instrument_test_path, instrument_output_file)
         else:
             print(f"Could not find unit test output file at {args.instrument_test_path}")
 
