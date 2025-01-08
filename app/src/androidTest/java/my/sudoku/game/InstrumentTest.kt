@@ -15,9 +15,11 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class InstrumentTest {
 
-    @get:Rule
+
     @JvmField
-    val activityScenarioRule = ActivityScenarioRule(HomeActivity::class.java)
+    @Rule
+    val activityScenarioRule: ActivityScenarioRule<HomeActivity> = ActivityScenarioRule(HomeActivity::class.java)
+
 
     @Test
     fun appLaunchTest() {
@@ -58,17 +60,5 @@ class InstrumentTest {
             .perform(click())
         onView(withId(R.id.sudokuGrid)) // Ensure the grid loads correctly
             .check(matches(isDisplayed()))
-
-//        // Test loading Medium Difficulty
-//        onView(withId(R.id.mediumButton)) // Replace with the actual button ID for medium difficulty
-//            .perform(click())
-//        onView(withId(R.id.sudokuGrid)) // Ensure the grid loads correctly
-//            .check(matches(isDisplayed()))
-//
-//        // Test loading Hard Difficulty
-//        onView(withId(R.id.hardButton)) // Replace with the actual button ID for hard difficulty
-//            .perform(click())
-//        onView(withId(R.id.sudokuGrid)) // Ensure the grid loads correctly
-//            .check(matches(isDisplayed()))
     }
 }
