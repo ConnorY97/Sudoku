@@ -25,29 +25,16 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import my.sudoku.game.game.GameLogic
+import my.sudoku.game.viewmodel.GameViewModel
 import java.util.Locale
 
 // Constants
 const val GRID_SIZE = 9
-var FINISHED = false
 const val PREFS_NAME = "AppPreferences"
 const val KEY_ERROR_CHECKING = "IS_ERROR_CHECKING_ENABLED"
-var SELECTED_CELL: Pair<Int, Int>? = null
 const val NUMBER_MARGIN_BUFFER = 180
-
-// ViewModel for managing game state
-class GameViewModel : ViewModel() {
-    private val gameState: MutableLiveData<GameState> = MutableLiveData(GameState())
-
-    fun getGameState(
-    ): MutableLiveData<GameState> {
-        return gameState
-    }
-}
 
 class MainActivity : ComponentActivity() {
     // UI
@@ -183,7 +170,7 @@ class MainActivity : ComponentActivity() {
 
                     if (isEditable) {
                         setOnClickListener {
-                            selectCell(row, col, sudokuGrid, context)
+                            selectCell(row, col, sudokuGrid, context, viewModel)
                         }
                     }
 
@@ -238,9 +225,9 @@ class MainActivity : ComponentActivity() {
                 // Save the game with the entered board name
                 val finalTime = SystemClock.elapsedRealtime() - timer.base
                 val success =
-                    saveGame(this, boardName, gameState.value!!, finalTime)
+                    saveGame(this, boardName, gameState.value!!, finalTime, viewModel)
                 if (success) {
-                    if (FINISHED) {
+                    if (viewModel.getFinished()) {
                         //If the board is finished the we should return to the home screen
                         val homeScreen = Intent(this, HomeActivity::class.java).apply {
                             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -292,10 +279,10 @@ class MainActivity : ComponentActivity() {
                 }
 
                 setOnClickListener {
-                    onNumberClicked(context, number, sudokuGrid, gameState.value!!, gameLogic)
+                    onNumberClicked(context, number, sudokuGrid, gameState.value!!, gameLogic, viewModel)
 
                     if (isErrorCheckingEnabled(context)) {
-                        SELECTED_CELL?.let { (row, col) ->
+                        viewModel.getSelectedCell()?.let { (row, col) ->
                             val cellIndex = row * 9 + col
                             if (checkInput(gameState.value?.board!!, row, col, number, gameLogic)) {
                                 (sudokuGrid.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(
@@ -388,9 +375,10 @@ fun onNumberClicked(
     number: Int,
     sudokuGrid: GridLayout,
     gameState: GameState,
-    gameLogic: GameLogic
+    gameLogic: GameLogic,
+    viewModel: GameViewModel
 ) {
-    SELECTED_CELL?.let { (row, col) ->
+    viewModel.getSelectedCell()?.let { (row, col) ->
         val cellIndex = row * 9 + col
         val selectedCell = sudokuGrid.getChildAt(cellIndex) as? EditText
 
@@ -406,7 +394,7 @@ fun onNumberClicked(
         val problematicCells = confirmEditableCells(gameState.editableCells, gameState.board, gameLogic)
 
         if (showCorrectCells(sudokuGrid, gameState.editableCells, problematicCells)) {
-            FINISHED = true
+            viewModel.setFinished(true)
             showSaveScreen(context)
         }
     }
@@ -416,13 +404,14 @@ private fun selectCell(
     row: Int,
     col: Int,
     sudokuGrid: GridLayout,
-    context: Context
+    context: Context,
+    viewModel: GameViewModel
 ) {
     clearCellHighlights(sudokuGrid, context)
     val cellIndex = row * 9 + col
     val selectedView = sudokuGrid.getChildAt(cellIndex)
     selectedView.setBackgroundColor(Color.YELLOW)
-    SELECTED_CELL = Pair(row, col)
+    viewModel.setSelectedCell(Pair(row, col))
 }
 
 private fun clearCellHighlights(
@@ -635,7 +624,8 @@ fun saveGame(
     context: Context,
     boardName: String,
     gameState: GameState,
-    finalTime: Long
+    finalTime: Long,
+    viewModel: GameViewModel
 ): Boolean {
     val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
@@ -661,7 +651,7 @@ fun saveGame(
     editor.putLong("${boardName}_elapsedTime", finalTime)
 
     // Save whether the game is finished
-    editor.putBoolean("${boardName}_isFinished", FINISHED)
+    editor.putBoolean("${boardName}_isFinished", viewModel.getFinished())
 
     // Commit changes
     editor.apply()
