@@ -3,7 +3,7 @@ package my.sudoku.game.viewmodel
 import GameState
 import androidx.lifecycle.MutableLiveData
 
-class GameViewModel {
+class GameViewModel() {
     private val gameState: MutableLiveData<GameState> = MutableLiveData(GameState())
     fun getGameState(
     ): MutableLiveData<GameState> {

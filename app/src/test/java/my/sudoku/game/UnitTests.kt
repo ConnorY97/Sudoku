@@ -5,15 +5,18 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
+import androidx.activity.viewModels
 import com.google.gson.Gson
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertSame
 import junit.framework.TestCase.assertTrue
 import my.sudoku.game.game.GameLogic
+import my.sudoku.game.viewmodel.GameViewModel
 import org.junit.Test
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
+import androidx.activity.viewModels
 
 class SudokuTest {
 
@@ -124,13 +127,14 @@ class SudokuTest {
         val elapsedTime = 120L
         val gameState = GameState()
         val savedBoards = mutableSetOf<String>()
+        val viewModel = GameViewModel()
 
         // Mock retrieving saved boards
         `when`(mockSharedPreferences.getStringSet("SavedBoards", mutableSetOf()))
             .thenReturn(savedBoards)
 
         // Act
-        val result = saveGame(mockContext, boardName, gameState, elapsedTime)
+        val result = saveGame(mockContext, boardName, gameState, elapsedTime, viewModel)
 
         // Assert
         assertEquals("Failed to save a board", true, result)
@@ -151,7 +155,7 @@ class SudokuTest {
         val boardName = "TestBoard"
         val gameState = GameState()
         val elapsedTime = 120L
-
+        val viewModel = GameViewModel()
         val savedBoards = mutableSetOf(boardName) // Pretend the board already exists
 
         // Mock retrieving saved boards
@@ -159,7 +163,7 @@ class SudokuTest {
             .thenReturn(savedBoards)
 
         // Act
-        val result = saveGame(mockContext, boardName, gameState, elapsedTime)
+        val result = saveGame(mockContext, boardName, gameState, elapsedTime, viewModel)
 
         // Assert
         assertEquals("Failed to save a board", false, result) // Saving should fail
