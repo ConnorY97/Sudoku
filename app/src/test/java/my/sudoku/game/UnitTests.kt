@@ -1,5 +1,6 @@
 package my.sudoku.game
 
+import GameState
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -9,6 +10,7 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertSame
 import junit.framework.TestCase.assertTrue
+import my.sudoku.game.game.GameLogic
 import org.junit.Test
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
@@ -22,24 +24,27 @@ class SudokuTest {
 
     @Test
     fun fillBoardTest() {
-        assertTrue("Failed to successfully fill a board", fillBoard(Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }))
+        val gameLogic = GameLogic()
+        assertTrue("Failed to successfully fill a board", gameLogic.fillBoard(Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }))
     }
 
     @Test
     fun validateBoardTest() {
+        val gameLogic = GameLogic()
         val board = Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }
-        fillBoard(board)
-        assertTrue("Failed to validate the board", validateBoard(board))
+        gameLogic.fillBoard(board)
+        assertTrue("Failed to validate the board", gameLogic.validateBoard(board))
     }
 
     @Test
     fun generatePuzzleTest() {
+        val gameLogic = GameLogic()
         val board = Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }
-        fillBoard(board)
-        assertTrue("Failed to validate the board", validateBoard(board))
+        gameLogic.fillBoard(board)
+        assertTrue("Failed to validate the board", gameLogic.validateBoard(board))
         val editableCells: MutableMap<Pair<Int, Int>, Boolean> = mutableMapOf()
-        createPuzzle(board, "Easy", editableCells)
-        assertTrue("Puzzle successfully created", validateBoard(board))
+        gameLogic.createPuzzle(board, "Easy", editableCells)
+        assertTrue("Puzzle successfully created", gameLogic.validateBoard(board))
     }
 
     @Test
@@ -71,9 +76,10 @@ class SudokuTest {
 
     @Test
     fun findDuplicatesInSubGridTest() {
+        val gameLogic = GameLogic()
         val board = Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }
 
-        fillBoard(board)
+        gameLogic.fillBoard(board)
 
         assertTrue("Failed to parse sub grid", findDuplicatePositionInSubGrid(0, 0, board).isEmpty())
 

@@ -8,7 +8,7 @@ import my.sudoku.game.GRID_SIZE
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-class GameLogic {
+open class GameLogic {
     // Game Logic
     fun generatePuzzle(
         context: Context,
@@ -47,7 +47,7 @@ class GameLogic {
         return grid
     }
 
-    private fun createPuzzle(
+    fun createPuzzle(
         board: Array<IntArray>,
         difficulty: String,
         editableCells: MutableMap<Pair<Int, Int>, Boolean>
@@ -96,7 +96,7 @@ class GameLogic {
     }
 
     // Check if placing a number is valid
-    fun isValidMove(
+    private fun isValidMove(
         board: Array<IntArray>,
         row: Int,
         col: Int,
@@ -113,7 +113,7 @@ class GameLogic {
         return true
     }
 
-    fun logBoard(
+    private fun logBoard(
         board: Array<IntArray>
     ) {
         val boardString = StringBuilder()
@@ -150,7 +150,7 @@ class GameLogic {
     }
 
     // Helper to check if all numbers in an array are unique (ignores zeros)
-    fun isUnique(
+    private fun isUnique(
         array: IntArray
     ): Boolean {
         val seen = mutableSetOf<Int>()
