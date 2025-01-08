@@ -7,6 +7,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import org.junit.Rule
 import org.junit.Test
@@ -20,6 +21,16 @@ class InstrumentTest {
     @Rule
     val activityScenarioRule: ActivityScenarioRule<HomeActivity> = ActivityScenarioRule(HomeActivity::class.java)
 
+
+    @Test
+    fun sanityTest() {
+        // Arrange
+        val expectedValue = 42
+        val actualValue = 24
+
+        // Act & Assert
+        assertEquals("Sanity test failed! Expected $expectedValue but got $actualValue.", expectedValue, actualValue)
+    }
 
     @Test
     fun appLaunchTest() {

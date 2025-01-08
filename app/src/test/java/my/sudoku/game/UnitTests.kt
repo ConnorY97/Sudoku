@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
-import androidx.activity.viewModels
 import com.google.gson.Gson
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
@@ -16,14 +15,13 @@ import my.sudoku.game.viewmodel.GameViewModel
 import org.junit.Test
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
-import androidx.activity.viewModels
 
 class SudokuTest {
 
-//    @Test
-//    fun sanityTest() {
-//        assertTrue("I should be able to see this message", false)
-//    }
+    @Test
+    fun sanityTest() {
+        assertTrue("I should be able to see this message", false)
+    }
 
     @Test
     fun fillBoardTest() {
