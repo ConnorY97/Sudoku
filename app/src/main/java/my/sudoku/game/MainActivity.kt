@@ -27,9 +27,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
+import my.sudoku.game.game.GameLogic
 import java.util.Locale
-import kotlin.math.sqrt
-import kotlin.random.Random
 
 // Constants
 const val GRID_SIZE = 9
@@ -90,6 +89,9 @@ class MainActivity : ComponentActivity() {
     // Initialize GameState with its default values
     private val viewModel: GameViewModel by viewModels()
 
+    // Initialize Game logic object
+    private val gameLogic = GameLogic()
+
     // Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.i("onCreate", "Entered main activity")
@@ -124,7 +126,7 @@ class MainActivity : ComponentActivity() {
             }
         } else {
             Log.i("onCreate", "Initializing Variables")
-            viewModel.getGameState().value?.board = viewModel.getGameState().value?.editableCells?.let { generatePuzzle(this,"Easy", it) }!!
+            viewModel.getGameState().value?.board = viewModel.getGameState().value?.editableCells?.let { gameLogic.generatePuzzle(this,"Easy", it) }!!
         }
 
         Log.i("onCreate", "Initializing UI")
@@ -132,7 +134,7 @@ class MainActivity : ComponentActivity() {
         initializeSudokuGrid()
 
         // Once everything has been initialized set up the number grid
-        initializeNumberButtons()
+        initializeNumberButtons(gameLogic)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -297,7 +299,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun initializeNumberButtons() {
+    private fun initializeNumberButtons(
+        gameLogic: GameLogic
+    ) {
         val gameState = viewModel.getGameState()
         for (number in 1..9) {
             val button = Button(this).apply {
@@ -317,12 +321,12 @@ class MainActivity : ComponentActivity() {
                 }
 
                 setOnClickListener {
-                    onNumberClicked(context, number, sudokuGrid, gameState.value!!)
+                    onNumberClicked(context, number, sudokuGrid, gameState.value!!, gameLogic)
 
                     if (isErrorCheckingEnabled(context)) {
                         SELECTED_CELL?.let { (row, col) ->
                             val cellIndex = row * 9 + col
-                            if (checkInput(gameState.value?.board!!, row, col, number)) {
+                            if (checkInput(gameState.value?.board!!, row, col, number, gameLogic)) {
                                 (sudokuGrid.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(
                                     Color.GREEN
                                 )
@@ -412,7 +416,8 @@ fun onNumberClicked(
     context: Context,
     number: Int,
     sudokuGrid: GridLayout,
-    gameState: GameState
+    gameState: GameState,
+    gameLogic: GameLogic
 ) {
     SELECTED_CELL?.let { (row, col) ->
         val cellIndex = row * 9 + col
@@ -427,7 +432,7 @@ fun onNumberClicked(
     } ?: Toast.makeText(context, "Select a cell first!", Toast.LENGTH_SHORT).show()
 
     if (areAllCellsFilled(sudokuGrid)) {
-        val problematicCells = confirmEditableCells(gameState.editableCells, gameState.board)
+        val problematicCells = confirmEditableCells(gameState.editableCells, gameState.board, gameLogic)
 
         if (showCorrectCells(sudokuGrid, gameState.editableCells, problematicCells)) {
             FINISHED = true
@@ -498,188 +503,11 @@ fun showCorrectCells(
     return finished
 }
 
-// Game Logic
-fun generatePuzzle(
-    context: Context,
-    difficulty: String,
-    editableCells: MutableMap<Pair<Int, Int>, Boolean>
-): Array<IntArray> {
-    Log.i("generatePuzzle","Started generating puzzle")
-    // Generate and return a new Sudoku puzzle
-    var grid = Array(GRID_SIZE) { IntArray(GRID_SIZE) {0} }
-    if (fillBoard(grid)) {
-        Log.i("generatePuzzle","Board filled")
-        logBoard(grid)
-        if (validateBoard(grid)) {
-            Log.i("generatePuzzle", "Validated full board")
-            createPuzzle(grid, difficulty, editableCells)
-            Log.i("generatePuzzle", "Created puzzle")
-            if (validateBoard(grid)) {
-                Log.i("generatePuzzle", "Validated puzzle")
-            } else {
-                Log.e("generatePuzzle", "Created puzzle failed validation check")
-                Toast.makeText(context, "Puzzle generation failed", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            Log.e("generatePuzzle", "Full board failed validation check")
-            Toast.makeText(context, "Board generation failed", Toast.LENGTH_SHORT).show()
-            if (context is Activity)
-                context.finish()
-        }
-    }
-    else {
-        Log.e("generatePuzzle", "Failed to fill board")
-        Toast.makeText(context, "Failed to fill board", Toast.LENGTH_SHORT).show()
-        // Failed to fill the board successfully, return an empty grid
-        grid = Array(GRID_SIZE) { IntArray(GRID_SIZE) {0} }
-    }
-    return grid
-}
-
-fun logBoard(
-    board: Array<IntArray>
-) {
-    val boardString = StringBuilder()
-    for (row in board) {
-        for (col in row) {
-            boardString.append("$col ")
-        }
-        boardString.append("\n") // Newline after each row
-    }
-    Log.i("logBoard", boardString.toString())
-}
-
-fun fillBoard(
-    board: Array<IntArray>
-): Boolean {
-    for (row in 0 until 9) {
-        for (col in 0 until 9) {
-            if (board[row][col] == 0) {
-                val numbers = (1..9).shuffled() // Shuffle numbers for randomness
-                for (num in numbers) {
-                    if (isValidMove(board, row, col, num)) {
-                        board[row][col] = num
-
-                        if (fillBoard(board)) {
-                            return true
-                        }
-
-                        board[row][col] = 0 // Backtrack
-                    }
-                }
-                return false
-            }
-        }
-    }
-    return true
-}
-
-fun createPuzzle(
-    board: Array<IntArray>,
-    difficulty: String,
-    editableCells: MutableMap<Pair<Int, Int>, Boolean>
-) {
-    val chanceToBeEmpty = when (difficulty) {
-        "easy" -> 0.1 // 20% cells empty
-        "medium" -> 0.5 // 50% cells empty
-        "hard" -> 0.7 // 70% cells empty
-        else -> 0.2
-    }
-    for (row in 0 until 9) {
-        for (col in 0 until 9) {
-            if (Random.nextFloat() < chanceToBeEmpty) {
-                board[row][col] = 0 // Empty the cell
-                // Adding the empty cell to the editable array for future reference
-                editableCells[Pair(row, col)] = false // Or false based on validity
-
-            }
-        }
-    }
-}
-
-fun validateBoard(
-    board: Array<IntArray>
-): Boolean {
-    val subGridSize = sqrt(GRID_SIZE.toDouble()).toInt() // 3 for a 9x9 board
-
-    // Validate rows and columns
-    for (i in 0 until GRID_SIZE) {
-        if (!isUnique(board[i]) || !isUnique(getColumn(board, i))) {
-            return false
-        }
-    }
-
-    // Validate sub-grids
-    for (row in 0 until GRID_SIZE step subGridSize) {
-        for (col in 0 until GRID_SIZE step subGridSize) {
-            if (!isUnique(getSubGrid(board, row, col, subGridSize))) {
-                return false
-            }
-        }
-    }
-    return true
-}
-
-// Helper to check if all numbers in an array are unique (ignores zeros)
-fun isUnique(
-    array: IntArray
-): Boolean {
-    val seen = mutableSetOf<Int>()
-    for (num in array) {
-        if (num != 0 && !seen.add(num)) {
-            return false
-        }
-    }
-    return true
-}
-
-// Helper to get a column as an array
-fun getColumn(
-    board: Array<IntArray>,
-    col: Int
-): IntArray {
-    return IntArray(board.size) { row -> board[row][col] }
-}
-
 fun getRow(
     board: Array<IntArray>,
     row: Int
 ): IntArray {
     return IntArray(board.size) {col -> board[row][col]}
-}
-
-// Helper to get a sub-grid as an array
-fun getSubGrid(
-    board: Array<IntArray>,
-    startRow: Int,
-    startCol: Int,
-    size: Int
-): IntArray {
-    val subGrid = mutableListOf<Int>()
-    for (row in startRow until startRow + size) {
-        for (col in startCol until startCol + size) {
-            subGrid.add(board[row][col])
-        }
-    }
-    return subGrid.toIntArray()
-}
-
-// Check if placing a number is valid
-fun isValidMove(
-    board: Array<IntArray>,
-    row: Int,
-    col: Int,
-    num: Int
-): Boolean {
-    for (i in 0 until 9) {
-        if (board[row][i] == num || board[i][col] == num) {
-            return false // Row or column conflict
-        }
-        if (board[row / 3 * 3 + i / 3][col / 3 * 3 + i % 3] == num) {
-            return false // Subgrid conflict
-        }
-    }
-    return true
 }
 
 fun getSubgridStart(
@@ -696,14 +524,15 @@ fun checkInput(
     board: Array<IntArray>,
     row: Int,
     col: Int,
-    num: Int
+    num: Int,
+    gameLogic: GameLogic
 ): Boolean {
     val (startRow, startCol) = getSubgridStart(row, col)
 
     // Filter out the cell at (row, col) in the current row, column, and subgrid
     val currentRow = getRow(board, row).filterIndexed { index, _ -> index != col }
-    val currentColumn = getColumn(board, col).filterIndexed { index, _ -> index != row }
-    val currentSubgrid = getSubGrid(board, startRow, startCol, 3).filterIndexed { index, _ ->
+    val currentColumn = gameLogic.getColumn(board, col).filterIndexed { index, _ -> index != row }
+    val currentSubgrid = gameLogic.getSubGrid(board, startRow, startCol, 3).filterIndexed { index, _ ->
         val subgridRow = startRow + index / 3
         val subgridCol = startCol + index % 3
         !(subgridRow == row && subgridCol == col)
@@ -782,7 +611,8 @@ fun findDuplicatePositionInSubGrid(
 
 fun confirmEditableCells(
     editableCells: MutableMap<Pair<Int, Int>, Boolean>,
-    board: Array<IntArray>
+    board: Array<IntArray>,
+    gameLogic: GameLogic
 ): Set<Pair<Int, Int>> {
     // Create a set to track problematic cells
     val problematicCells = mutableSetOf<Pair<Int, Int>>()
@@ -797,7 +627,7 @@ fun confirmEditableCells(
 
     // Check columns for duplicates
     for (col in board.indices) {
-        val column = getColumn(board, col)
+        val column = gameLogic.getColumn(board, col)
         val duplicates = findDuplicatePositions(col, column, false)
         duplicates.forEach { problemCell ->
             problematicCells.add(problemCell) // Add problematic cell to the set
