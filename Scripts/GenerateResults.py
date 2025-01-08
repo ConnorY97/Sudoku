@@ -203,8 +203,12 @@ def convert_instrument_test_to_json(xml_file_path, output_file_path):
                 # Extract and clean up the 'message' and 'trace'
                 message = failure_element.attrib.get("message", None)
                 if not message:  # If no message attribute, extract from text content
-                    raw_text = failure_element.text.strip() if failure_element.text else "No message provided"
-                    message = raw_text.splitlines()[0] if raw_text else "No message provided"
+                    raw_message = failure_element.text.strip() if failure_element.text else "No message provided"
+                    if raw_message.startswith("junit.framework.AssertionFailedError:"):
+                        message = raw_message.replace("junit.framework.AssertionFailedError:", "").strip()
+                        message = message.split("\n", 1)[0]
+                    else:
+                        message = raw_message.strip()
 
                 trace = failure_element.text.strip() if failure_element.text else "No trace available"
                 trace_lines = trace.splitlines()
@@ -292,7 +296,7 @@ if __name__ == "__main__":
         local_instrument_file = r"C:\Users\c_you\Desktop\tmp\instrumentResults.json"
 
         # MAKE SURE TO SET TO FALSE ONCE LOCAL TESTING DONE
-        local_testing = False
+        local_testing = True
         print(f"LOCAL TESTING: {local_testing}")
         # !!
 
