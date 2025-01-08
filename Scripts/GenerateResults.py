@@ -296,7 +296,7 @@ if __name__ == "__main__":
         local_instrument_file = r"C:\Users\c_you\Desktop\tmp\instrumentResults.json"
 
         # MAKE SURE TO SET TO FALSE ONCE LOCAL TESTING DONE
-        local_testing = True
+        local_testing = False
         print(f"LOCAL TESTING: {local_testing}")
         # !!
 
