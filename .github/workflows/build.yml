@@ -69,7 +69,7 @@ jobs:
           body_path: "./Scripts/revision.txt"
           body: "Continued work on development"
           draft: false
-          prerelease: true
+          prerelease: false
           token: ${{ secrets.TOKEN }}
           files:
             ${{ env.APK_PATH }}Sudoku.apk
