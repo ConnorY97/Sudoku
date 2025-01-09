@@ -1,4 +1,4 @@
-# Sudoku revisions
+# Sudoku Revisions
 
 ### Feature
 - Added a stats screen
