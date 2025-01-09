@@ -12,8 +12,8 @@ android {
         applicationId = "my.sudoku.game"
         minSdk = 24
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.06"
+        versionCode = 3
+        versionName = "1.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
