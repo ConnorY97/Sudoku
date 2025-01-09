@@ -68,8 +68,7 @@ jobs:
           name: "${{ env.COMMIT_MSG }}"
           body_path: "./Scripts/revision.txt"
           body: "Continued work on development"
-          draft: false
-          prerelease: false
+          make_latest: true
           token: ${{ secrets.TOKEN }}
           files:
             ${{ env.APK_PATH }}Sudoku.apk
