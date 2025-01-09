@@ -2,10 +2,18 @@
 
 ### Feature
 - Successfully ran instrument tests locally
+- Successfully ran instrument tests remotely
+- Broken up the `MainActivity` class into more modular classes that have more defined responsibilities.
+- Lots of code refactoring
+
+### Fixes
+- I was hard coding the difficulty for the refactor, now actually loading the correct difficulty
+- Added activity ID's to the layout files so they can be identified for testing
 
 ### Tests
-- Opening the app
-- Opening the load and game activities
+- I have broken up the instrument tests based on the activity being tested
+- Added unit tests for the newly created classes
+    These are the responsibilities extracted from the `MainActivity`
 
 ### To Do
 - Add dynamic back grounds and the option to have a solid background

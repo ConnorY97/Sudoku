@@ -7,15 +7,13 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
-import junit.framework.TestCase.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class InstrumentTest {
+class HomeActivityInstrumentTesting {
 
 
     @JvmField
@@ -48,7 +46,7 @@ class InstrumentTest {
             .perform(click())
 
         // Ensure the Load Scene root view is displayed
-        onView(withId(R.id.loadSceneRoot)) // Replace with the actual root view ID of the Load Scene
+        onView(withId(R.id.loadActivityRoot)) // Replace with the actual root view ID of the Load Scene
             .check(matches(isDisplayed()))
     }
 

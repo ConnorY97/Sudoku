@@ -50,15 +50,16 @@ class SudokuTest {
 
     @Test
     fun findDuplicatesInRowAndColTest() {
+        val gameLogic = GameLogic()
         val row = IntArray(GRID_SIZE) { it }
         assertTrue(
             "Failed to parse valid row",
-            findDuplicatePositions(0, row, true).isEmpty()
+            gameLogic.findDuplicatePositions(0, row, true).isEmpty()
         )
 
         assertTrue(
             "Failed to parse valid column",
-            findDuplicatePositions(0, row, false).isEmpty()
+            gameLogic.findDuplicatePositions(0, row, false).isEmpty()
         )
 
         // Insert duplication
@@ -66,12 +67,12 @@ class SudokuTest {
 
         assertTrue(
             "Failed to find duplication in row",
-            findDuplicatePositions(0, row, true).size == 2
+            gameLogic.findDuplicatePositions(0, row, true).size == 2
         )
 
         assertTrue(
             "Failed to find duplication in column",
-            findDuplicatePositions(0, row, false).size == 2
+            gameLogic.findDuplicatePositions(0, row, false).size == 2
         )
     }
 
@@ -82,13 +83,13 @@ class SudokuTest {
 
         gameLogic.fillBoard(board)
 
-        assertTrue("Failed to parse sub grid", findDuplicatePositionInSubGrid(0, 0, board).isEmpty())
+        assertTrue("Failed to parse sub grid", gameLogic.findDuplicatePositionInSubGrid(0, 0, board).isEmpty())
 
         // It was failing because just adding an 8 into the first position could not guarantee that there would be an issue
         board[0][0] = 8
         board[0][1] = 8
 
-        assertTrue("Failed to find duplicate in sub grid", findDuplicatePositionInSubGrid(0, 0, board).isNotEmpty()
+        assertTrue("Failed to find duplicate in sub grid", gameLogic.findDuplicatePositionInSubGrid(0, 0, board).isNotEmpty()
         )
     }
 

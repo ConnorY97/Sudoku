@@ -55,7 +55,6 @@ class MainActivity : ComponentActivity() {
         Log.i("onCreate", "Entered main activity")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         Log.i("onCreate", "Error checking is ${if (isErrorCheckingEnabled(this)) "Error checking Enabled" else "Error checking is disabled"}")
         // Get the game mode from the Intent (null check instead of empty string check)
         val gameMode = intent.getStringExtra("GAME_MODE")
@@ -84,7 +83,19 @@ class MainActivity : ComponentActivity() {
             }
         } else {
             Log.i("onCreate", "Initializing Variables")
-            viewModel.getGameState().value?.board = viewModel.getGameState().value?.editableCells?.let { gameLogic.generatePuzzle(this,"Easy", it) }!!
+            val difficulty = intent.getStringExtra("DIFFICULTY_LEVEL")
+            if (difficulty != null) {
+                Log.i("onCreate", "Successfully loaded difficulty")
+                viewModel.getGameState().value?.board = viewModel.getGameState().value?.editableCells?.let { gameLogic.generatePuzzle(this, difficulty, it) }!!
+            } else {
+                Log.e("onCreate", "Failed to load difficulty")
+                val homeScreen = Intent(this, HomeActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                startActivity(homeScreen)
+                finish()  // Optional if you want to finish this activity explicitly
+            }
+
         }
 
         Log.i("onCreate", "Initializing UI")
@@ -284,7 +295,7 @@ class MainActivity : ComponentActivity() {
                     if (isErrorCheckingEnabled(context)) {
                         viewModel.getSelectedCell()?.let { (row, col) ->
                             val cellIndex = row * 9 + col
-                            if (checkInput(gameState.value?.board!!, row, col, number, gameLogic)) {
+                            if (gameLogic.checkInput(gameState.value?.board!!, row, col, number)) {
                                 (sudokuGrid.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(
                                     Color.GREEN
                                 )
@@ -391,7 +402,7 @@ fun onNumberClicked(
     } ?: Toast.makeText(context, "Select a cell first!", Toast.LENGTH_SHORT).show()
 
     if (areAllCellsFilled(sudokuGrid)) {
-        val problematicCells = confirmEditableCells(gameState.editableCells, gameState.board, gameLogic)
+        val problematicCells = gameLogic.confirmEditableCells(gameState.editableCells, gameState.board, gameLogic)
 
         if (showCorrectCells(sudokuGrid, gameState.editableCells, problematicCells)) {
             viewModel.setFinished(true)
@@ -461,162 +472,6 @@ fun showCorrectCells(
     }, 2000) // Adjust the delay as necessary
 
     return finished
-}
-
-fun getRow(
-    board: Array<IntArray>,
-    row: Int
-): IntArray {
-    return IntArray(board.size) {col -> board[row][col]}
-}
-
-fun getSubgridStart(
-    row: Int,
-    col: Int,
-    subgridSize: Int = 3
-): Pair<Int, Int> {
-    val startRow = (row / subgridSize) * subgridSize
-    val startCol = (col / subgridSize) * subgridSize
-    return Pair(startRow, startCol)
-}
-
-fun checkInput(
-    board: Array<IntArray>,
-    row: Int,
-    col: Int,
-    num: Int,
-    gameLogic: GameLogic
-): Boolean {
-    val (startRow, startCol) = getSubgridStart(row, col)
-
-    // Filter out the cell at (row, col) in the current row, column, and subgrid
-    val currentRow = getRow(board, row).filterIndexed { index, _ -> index != col }
-    val currentColumn = gameLogic.getColumn(board, col).filterIndexed { index, _ -> index != row }
-    val currentSubgrid = gameLogic.getSubGrid(board, startRow, startCol, 3).filterIndexed { index, _ ->
-        val subgridRow = startRow + index / 3
-        val subgridCol = startCol + index % 3
-        !(subgridRow == row && subgridCol == col)
-    }
-
-    return when (num) {
-        in currentRow -> false
-        in currentColumn -> false
-        in currentSubgrid -> false
-        else -> true
-    }
-}
-
-fun findDuplicatePositions(
-    index: Int,
-    array: IntArray,
-    isRow: Boolean
-): Set<Pair<Int, Int>> {
-    val seen = mutableMapOf<Int, MutableList<Pair<Int, Int>>>() // Map to store positions of each number
-    val duplicates = mutableSetOf<Pair<Int, Int>>() // Set to store duplicate positions
-
-    array.forEachIndexed { i, num ->
-        if (num != 0) { // Ignore zero values (empty cells)
-            val position = if (isRow) Pair(index, i) else Pair(i, index) // Row or Column logic
-            if (seen.containsKey(num)) {
-                seen[num]?.add(position) // Add this index to the list of positions for this number
-            } else {
-                seen[num] = mutableListOf(position) // Initialize a list with the current index
-            }
-        }
-    }
-
-    // Iterate through the map and add all duplicates (more than one occurrence of a number)
-    seen.forEach { (_, positions) ->
-        if (positions.size > 1) {
-            duplicates.addAll(positions) // Add all duplicates to the set
-        }
-    }
-
-    return duplicates
-}
-
-fun findDuplicatePositionInSubGrid(
-    startRow: Int,
-    startCol: Int,
-    board: Array<IntArray>
-): Set<Pair<Int, Int>> {
-    val seen = mutableMapOf<Int, MutableList<Pair<Int, Int>>>() // Map to store positions of each number
-    val duplicates = mutableSetOf<Pair<Int, Int>>() // Set to store duplicate positions
-
-    // Iterate through the subgrid
-    for (row in startRow until startRow + 3) {
-        for (col in startCol until startCol + 3) {
-            val num = board[row][col]
-            if (num != 0) { // Ignore zero values (empty cells)
-                if (seen.containsKey(num)) {
-                    seen[num]?.add(Pair(row, col)) // Add this position to the list for this number
-                } else {
-                    seen[num] = mutableListOf(Pair(row, col)) // Initialize the list with the current position
-                }
-            }
-        }
-    }
-
-    // Iterate through the map and add all duplicates (more than one occurrence of a number)
-    seen.forEach { (_, positions) ->
-        if (positions.size > 1) {
-            positions.forEach { pos ->
-                duplicates.add(pos) // Add to duplicates set
-            }
-        }
-    }
-
-    return duplicates
-}
-
-fun confirmEditableCells(
-    editableCells: MutableMap<Pair<Int, Int>, Boolean>,
-    board: Array<IntArray>,
-    gameLogic: GameLogic
-): Set<Pair<Int, Int>> {
-    // Create a set to track problematic cells
-    val problematicCells = mutableSetOf<Pair<Int, Int>>()
-
-    // Check rows for duplicates
-    for (row in board.indices) {
-        val duplicates = findDuplicatePositions(row, board[row], true)
-        duplicates.forEach { problemCell ->
-            problematicCells.add(problemCell) // Add problematic cell to the set
-        }
-    }
-
-    // Check columns for duplicates
-    for (col in board.indices) {
-        val column = gameLogic.getColumn(board, col)
-        val duplicates = findDuplicatePositions(col, column, false)
-        duplicates.forEach { problemCell ->
-            problematicCells.add(problemCell) // Add problematic cell to the set
-        }
-    }
-
-    // Check the sub grids
-    for (row in 0 until GRID_SIZE step 3) {
-        for (col in 0 until GRID_SIZE step 3) {
-            val duplicates = findDuplicatePositionInSubGrid(row, col, board)
-            duplicates.forEach { problemCell ->
-                problematicCells.add(problemCell) // Add problematic cell to the set
-            }
-        }
-    }
-
-    // Update the editableCells map with the validation results
-    for (row in board.indices) {
-        for (col in board.indices) {
-            val isEditable = editableCells.containsKey(Pair(row, col))
-            val isValid = !problematicCells.contains(Pair(row, col))
-            if (isEditable) {
-                editableCells[Pair(row, col)] = isValid // Update validity for editable cells
-            }
-        }
-    }
-
-    // Return the set of problematic cells
-    return problematicCells
 }
 
 // Save game state
