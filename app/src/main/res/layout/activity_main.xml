@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+    android:id="@+id/mainActivityRoot"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -47,4 +48,16 @@
         android:layout_height="wrap_content"
         android:columnCount="9"
         android:rowCount="9" />
+
+    <!-- Number Grid -->
+    <GridLayout
+        android:id="@+id/numberGrid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="3"
+        android:padding="8dp"
+        android:background="@android:color/transparent"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal">
+    </GridLayout>
 </LinearLayout>

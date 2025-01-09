@@ -57,19 +57,8 @@ class LoadActivity : ComponentActivity() {
 
         adapter = SavedGamesAdapter(this, savedBoards)
         listView.adapter = adapter
-
-        // Handle board selection
-        listView.onItemClickListener = AdapterView.OnItemClickListener { _, view, position, _ ->
-            // Only handle click if it's not on the delete button
-            if (view.findViewById<Button>(R.id.deleteButton)?.isPressed != true) {
-                val selectedBoard = savedBoards[position].first
-                val intent = Intent(this, MainActivity::class.java)
-                intent.putExtra("GAME_MODE", "load")
-                intent.putExtra("BOARD_NAME", selectedBoard)
-                startActivity(intent)
-            }
-        }
     }
+
 
     fun showDeleteConfirmationDialog(boardName: String, position: Int) {
         AlertDialog.Builder(this)
@@ -146,6 +135,13 @@ class LoadActivity : ComponentActivity() {
         val seconds = (elapsedMillis / 1000) % 60
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
+
+    fun loadGame(boardName: String) {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("GAME_MODE", "load")  // Indicate that it's a load operation
+        intent.putExtra("BOARD_NAME", boardName)  // Pass the selected board name
+        startActivity(intent)
+    }
 }
 
 class SavedGamesAdapter(
@@ -163,16 +159,27 @@ class SavedGamesAdapter(
 
         val (name, timer, isFinished) = savedBoards[position]
 
+        // Set the text for the name and details TextViews
         view.findViewById<TextView>(R.id.nameTextView).text = name
         view.findViewById<TextView>(R.id.detailsTextView).text =
             context.getString(R.string.time, timer, if (isFinished) "Finished" else "Incomplete")
 
+        // Delete button functionality
         view.findViewById<Button>(R.id.deleteButton).setOnClickListener {
             if (context is LoadActivity) {
                 context.showDeleteConfirmationDialog(name, position)
             }
         }
 
+        // Play button functionality (load the game)
+        view.findViewById<Button>(R.id.playButton).setOnClickListener {
+            if (context is LoadActivity) {
+                val selectedBoard = savedBoards[position].first // The board name
+                context.loadGame(selectedBoard) // Call the load game function
+            }
+        }
+
         return view
     }
 }
+

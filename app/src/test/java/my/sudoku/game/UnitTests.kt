@@ -1,5 +1,6 @@
 package my.sudoku.game
 
+import GameState
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -9,6 +10,8 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertSame
 import junit.framework.TestCase.assertTrue
+import my.sudoku.game.game.GameLogic
+import my.sudoku.game.viewmodel.GameViewModel
 import org.junit.Test
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
@@ -22,37 +25,41 @@ class SudokuTest {
 
     @Test
     fun fillBoardTest() {
-        assertTrue("Failed to successfully fill a board", fillBoard(Array(GRIDSIZE) { IntArray(GRIDSIZE) { 0 } }))
+        val gameLogic = GameLogic()
+        assertTrue("Failed to successfully fill a board", gameLogic.fillBoard(Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }))
     }
 
     @Test
     fun validateBoardTest() {
-        val board = Array(GRIDSIZE) { IntArray(GRIDSIZE) { 0 } }
-        fillBoard(board)
-        assertTrue("Failed to validate the board", validateBoard(board))
+        val gameLogic = GameLogic()
+        val board = Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }
+        gameLogic.fillBoard(board)
+        assertTrue("Failed to validate the board", gameLogic.validateBoard(board))
     }
 
     @Test
     fun generatePuzzleTest() {
-        val board = Array(GRIDSIZE) { IntArray(GRIDSIZE) { 0 } }
-        fillBoard(board)
-        assertTrue("Failed to validate the board", validateBoard(board))
+        val gameLogic = GameLogic()
+        val board = Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }
+        gameLogic.fillBoard(board)
+        assertTrue("Failed to validate the board", gameLogic.validateBoard(board))
         val editableCells: MutableMap<Pair<Int, Int>, Boolean> = mutableMapOf()
-        createPuzzle(board, "Easy", editableCells)
-        assertTrue("Puzzle successfully created", validateBoard(board))
+        gameLogic.createPuzzle(board, "Easy", editableCells)
+        assertTrue("Puzzle successfully created", gameLogic.validateBoard(board))
     }
 
     @Test
     fun findDuplicatesInRowAndColTest() {
-        val row = IntArray(GRIDSIZE) { it }
+        val gameLogic = GameLogic()
+        val row = IntArray(GRID_SIZE) { it }
         assertTrue(
             "Failed to parse valid row",
-            findDuplicatePositions(0, row, true).isEmpty()
+            gameLogic.findDuplicatePositions(0, row, true).isEmpty()
         )
 
         assertTrue(
             "Failed to parse valid column",
-            findDuplicatePositions(0, row, false).isEmpty()
+            gameLogic.findDuplicatePositions(0, row, false).isEmpty()
         )
 
         // Insert duplication
@@ -60,28 +67,29 @@ class SudokuTest {
 
         assertTrue(
             "Failed to find duplication in row",
-            findDuplicatePositions(0, row, true).size == 2
+            gameLogic.findDuplicatePositions(0, row, true).size == 2
         )
 
         assertTrue(
             "Failed to find duplication in column",
-            findDuplicatePositions(0, row, false).size == 2
+            gameLogic.findDuplicatePositions(0, row, false).size == 2
         )
     }
 
     @Test
     fun findDuplicatesInSubGridTest() {
-        val board = Array(GRIDSIZE) { IntArray(GRIDSIZE) { 0 } }
+        val gameLogic = GameLogic()
+        val board = Array(GRID_SIZE) { IntArray(GRID_SIZE) { 0 } }
 
-        fillBoard(board)
+        gameLogic.fillBoard(board)
 
-        assertTrue("Failed to parse sub grid", findDuplicatePositionInSubGrid(0, 0, board).isEmpty())
+        assertTrue("Failed to parse sub grid", gameLogic.findDuplicatePositionInSubGrid(0, 0, board).isEmpty())
 
         // It was failing because just adding an 8 into the first position could not guarantee that there would be an issue
         board[0][0] = 8
         board[0][1] = 8
 
-        assertTrue("Failed to find duplicate in sub grid", findDuplicatePositionInSubGrid(0, 0, board).isNotEmpty()
+        assertTrue("Failed to find duplicate in sub grid", gameLogic.findDuplicatePositionInSubGrid(0, 0, board).isNotEmpty()
         )
     }
 
@@ -115,25 +123,23 @@ class SudokuTest {
 
         // Arrange
         val boardName = "TestBoard"
-        val gridSize = 9
-        val board = Array(gridSize) { IntArray(gridSize) { 0 } }
-        val editableCells = mapOf(Pair(0, 0) to true, Pair(1, 1) to false)
         val elapsedTime = 120L
-
+        val gameState = GameState()
         val savedBoards = mutableSetOf<String>()
+        val viewModel = GameViewModel()
 
         // Mock retrieving saved boards
         `when`(mockSharedPreferences.getStringSet("SavedBoards", mutableSetOf()))
             .thenReturn(savedBoards)
 
         // Act
-        val result = saveGame(mockContext, boardName, board, editableCells, elapsedTime)
+        val result = saveGame(mockContext, boardName, gameState, elapsedTime, viewModel)
 
         // Assert
         assertEquals("Failed to save a board", true, result)
         verify(mockEditor).putStringSet("SavedBoards", setOf(boardName))
-        verify(mockEditor).putString("${boardName}_board", gson.toJson(board))
-        verify(mockEditor).putString("${boardName}_editableCells", gson.toJson(editableCells))
+        verify(mockEditor).putString("${boardName}_board", gson.toJson(gameState.board))
+        verify(mockEditor).putString("${boardName}_editableCells", gson.toJson(gameState.editableCells))
         verify(mockEditor).putLong("${boardName}_elapsedTime", elapsedTime)
         verify(mockEditor).apply()
     }
@@ -146,11 +152,9 @@ class SudokuTest {
 
         // Arrange
         val boardName = "TestBoard"
-        val gridSize = 9
-        val board = Array(gridSize) { IntArray(gridSize) { 0 } }
-        val editableCells = mapOf(Pair(0, 0) to true, Pair(1, 1) to false)
+        val gameState = GameState()
         val elapsedTime = 120L
-
+        val viewModel = GameViewModel()
         val savedBoards = mutableSetOf(boardName) // Pretend the board already exists
 
         // Mock retrieving saved boards
@@ -158,7 +162,7 @@ class SudokuTest {
             .thenReturn(savedBoards)
 
         // Act
-        val result = saveGame(mockContext, boardName, board, editableCells, elapsedTime)
+        val result = saveGame(mockContext, boardName, gameState, elapsedTime, viewModel)
 
         // Assert
         assertEquals("Failed to save a board", false, result) // Saving should fail
@@ -191,7 +195,7 @@ class SudokuTest {
 
         // Assert
         assertNotNull("Load failed", game) // Ensure result is not null
-        assertEquals("Failed to retrieve board", board.size, game.board?.size) // Verify board loaded
+        assertEquals("Failed to retrieve board", board.size, game.board.size) // Verify board loaded
         assertEquals("Failed to retrieve editableCells", editableCells, game.editableCells)  // Verify editable cells loaded
         assertEquals("Failed to retrieve elapsed time", elapsedTime, game.elapsedTime)     // Verify elapsed time loaded
     }
