@@ -53,6 +53,8 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.mockito.core)
     implementation(libs.mockito.kotlin)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

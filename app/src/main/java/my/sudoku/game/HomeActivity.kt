@@ -33,6 +33,11 @@ class HomeActivity : ComponentActivity() {
         loadButton.setOnClickListener {
             loadBoard()
         }
+
+        val statsButton = findViewById<Button>(R.id.statsButton)
+        statsButton.setOnClickListener {
+            openStats()
+        }
     }
 
     private fun startGame(difficulty: String) {
@@ -43,6 +48,11 @@ class HomeActivity : ComponentActivity() {
 
     private fun loadBoard() {
         val intent = Intent(this, LoadActivity::class.java)
+        startActivity(intent)
+    }
+
+    private  fun openStats() {
+        val intent = Intent(this, StatsActivity::class.java)
         startActivity(intent)
     }
 }

@@ -28,4 +28,10 @@
     <string name="back">Back</string>
     <string name="delete_button">Delete</string>
     <string name="play_button">Play</string>
+    <string name="total_saved_boards">Total Saved Boards: %1$d</string>
+    <string name="total_finished_boards">Total Finished Boards: %1$d</string>
+    <string name="avg_completion_time">Average Completion Time: %1$s</string>
+    <string name="total_time">Total Time Play: %1$s</string>
+    <string name="status_button">Stats</string>
+    <string name="stats_title">Statistics</string>
 </resources>

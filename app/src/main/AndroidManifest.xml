@@ -13,10 +13,13 @@
         android:theme="@style/Theme.Sudoku"
         tools:targetApi="31">
         <activity
+            android:name=".StatsActivity"
+            android:exported="false" />
+        <activity
             android:name=".HomeActivity"
             android:exported="true"
-            android:theme="@style/Theme.Sudoku"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.Sudoku"
             tools:ignore="DiscouragedApi,LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,16 +29,16 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi,LockedOrientationActivity" />
         <activity
             android:name=".LoadActivity"
             android:exported="false"
             android:label="@string/title_activity_load"
-            android:theme="@style/Theme.Sudoku"
             android:screenOrientation="portrait"
-            tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
+            android:theme="@style/Theme.Sudoku"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity" />
     </application>
 
 </manifest>

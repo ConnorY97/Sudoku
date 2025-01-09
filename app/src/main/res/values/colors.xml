@@ -11,4 +11,9 @@
     <color name="cell_background">#80FFFFFF</color>
     <color name="text_background">#80FFFFFF</color> <!-- 50% visible white -->
     <color name="color_primary">#6200EE</color>
+    <color name="divider">#BDBDBD</color> <!-- Light grey for dividers -->
+    <color name="background">#FF018786</color> <!-- Light grey background -->
+    <color name="toolbar_background">#6200EE</color> <!-- Deep purple for the toolbar -->
+    <color name="primary">#3F51B5</color> <!-- Blue for primary accent -->
+    <color name="secondary">#FF4081</color> <!-- Pink for secondary accent -->
 </resources>
