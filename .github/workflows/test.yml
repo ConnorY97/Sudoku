@@ -51,13 +51,19 @@ jobs:
       - name: Convert Results
         shell: bash
         run: |
-          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest/TEST-my.sudoku.game.SudokuTest.xml" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/TEST-emulator-5554 - 15-_app-.xml"
+          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/"
 
       - name: Publish Results
         if: success()
         run: |
           npx ctrf merge "/home/connor/Documents/SudokuResults/"
           npx github-actions-ctrf "/home/connor/Documents/SudokuResults/ctrf-report.json"
+
+      - name: Upload .json File
+        uses: actions/upload-artifact@v4
+        with:
+          name: Results
+          path: "/home/connor/Documents/SudokuResults/ctrf-report.json"
 
       - name: Clean Up Result Files
         if: success()

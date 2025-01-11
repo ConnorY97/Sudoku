@@ -5,18 +5,24 @@ import os
 from datetime import datetime, timezone
 import traceback
 
-
-def to_unix_timestamp(dt_str):
-    """
-    Converts an ISO 8601 datetime string to a Unix timestamp in seconds.
-    Returns 0 if conversion fails.
-    """
-    try:
-        dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S%z")
-        return int(dt.timestamp())
-    except Exception as e:
-        print(f"Error parsing datetime '{dt_str}': {e}")
-        return 0
+# def to_unix_timestamp(dt_str):
+#     """
+#     Converts an ISO 8601 datetime string to a Unix timestamp in seconds.
+#     Handles cases with and without time zone information.
+#     Returns 0 if conversion fails.
+#     """
+#     try:
+#         # Attempt parsing with time zone
+#         if "+" in dt_str or "-" in dt_str[-6:]:  # Likely contains a time zone
+#             dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S%z")
+#         else:
+#             # Assume UTC if no time zone provided
+#             dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+#             dt = dt.replace(tzinfo=timezone.utc)
+#         return int(dt.timestamp())
+#     except Exception as e:
+#         print(f"Error parsing datetime '{dt_str}': {e}")
+#         return 0
 
 def convert_unit_test_to_json(xml_file_path, output_file_path):
     try:
@@ -40,7 +46,7 @@ def convert_unit_test_to_json(xml_file_path, output_file_path):
         # Extract times and duration
         start_time = main_suite.attrib.get("timestamp", "0001-01-01 00:00:00+0000")
         duration = float(main_suite.attrib.get("time", 0))
-        start_timestamp = to_unix_timestamp(start_time)
+        start_timestamp = 0
         stop_timestamp = start_timestamp + int(duration)
 
         print("Retrieved times")
@@ -172,7 +178,7 @@ def convert_instrument_test_to_json(xml_file_path, output_file_path):
         # Extract times and duration
         start_time = main_suite.attrib.get("timestamp", "0001-01-01 00:00:00+0000")
         duration = float(main_suite.attrib.get("time", 0))
-        start_timestamp = to_unix_timestamp(start_time)
+        start_timestamp = 0 #to_unix_timestamp(start_time)
         stop_timestamp = start_timestamp + int(duration)
 
         print("Retrieved times")
@@ -282,18 +288,15 @@ def convert_instrument_test_to_json(xml_file_path, output_file_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Convert XML test results to JSON.")
-    parser.add_argument("unit_tests_path", help="Path to the unit test xml")
-    parser.add_argument("instrument_test_path", help="Path to the instrument test xml")
+    parser.add_argument("unit_test_dir", help="Path to the unit test xml")
+    parser.add_argument("instrument_test_dir", help="Path to the instrument test xml")
     args = parser.parse_args()
     try:
         # Generate JSON data
-        unit_output_file = r"/home/connor/Documents/SudokuResults/results.json"
-
-        instrument_output_file = r"/home/connor/Documents/SudokuResults/instrument_results.json"
+        output_dir = r"/home/connor/Documents/SudokuResults/"
 
         # FOR LOCAL TESTING
-        local_unit_file = r"C:\Users\c_you\Desktop\tmp\results.json"
-        local_instrument_file = r"C:\Users\c_you\Desktop\tmp\instrumentResults.json"
+        local_output_dir = "C:\\Users\\c_you\\Desktop\\tmp\\"
 
         # MAKE SURE TO SET TO FALSE ONCE LOCAL TESTING DONE
         local_testing = False
@@ -301,39 +304,55 @@ if __name__ == "__main__":
         # !!
 
         if local_testing:
-            # Ensure the output directories exist
-            os.makedirs(os.path.dirname(local_unit_file), exist_ok=True)
-            print("Created unit file")
-
-            os.makedirs(os.path.dirname(local_instrument_file), exist_ok=True)
-            print("Created instrument file")
-
-            if (os.path.exists(args.unit_tests_path)):
-                convert_unit_test_to_json(args.unit_tests_path, local_unit_file)
+            if (os.path.exists(args.unit_test_dir) and os.path.isdir(args.unit_test_dir)):
+                for filename in os.listdir(args.unit_test_dir):
+                    if filename.endswith(".xml"):
+                        print(f"Converting {filename}")
+                        input_file = os.path.join(args.unit_test_dir, filename)
+                        output_file = os.path.join(local_output_dir, filename.replace(".xml", ".json"))
+                        convert_unit_test_to_json(input_file, output_file)
+                    else:
+                        print(f"{os.path.join(args.unit_test_dir, filename)} is not an xml file")
             else:
-                print(f"Could not find unit test output file at {args.unit_tests_path}")
+                print(f"Could not find unit test output dir at {args.unit_test_dir}")
 
-            if (os.path.exists(args.instrument_test_path)):
-                convert_instrument_test_to_json(args.instrument_test_path, local_instrument_file)
+            if (os.path.exists(args.instrument_test_dir) and os.path.isdir(args.instrument_test_dir)):
+                for filename in os.listdir(args.instrument_test_dir):
+                    if filename.endswith(".xml"):
+                        print(f"Converting {filename}")
+                        input_file = os.path.join(args.instrument_test_dir, filename)
+                        output_file = os.path.join(local_output_dir, filename.replace(".xml", ".json"))
+                        print(f"{output_file}")
+                        convert_instrument_test_to_json(input_file, output_file)
+                    else:
+                        print(f"{os.path.join(args.instrument_test_dir, filename)} is not an xml file")
             else:
-                print(f"Could not find unit test output file at {args.instrument_test_path}")
+                print(f"Could not find unit test output file at {args.instrument_test_dir}")
         else:
-            # Ensure the output directories exist
-            os.makedirs(os.path.dirname(unit_output_file), exist_ok=True)
-            print("Created unit file")
-
-            os.makedirs(os.path.dirname(instrument_output_file), exist_ok=True)
-            print("Created instrument file")
-
-            if (os.path.exists(args.unit_tests_path)):
-                convert_unit_test_to_json(args.unit_tests_path, unit_output_file)
+            if (os.path.exists(args.unit_test_dir) and os.path.isdir(args.unit_test_dir)):
+                for filename in os.listdir(args.unit_test_dir):
+                    if filename.endswith(".xml"):
+                        print(f"Converting {filename}")
+                        input_file = os.path.join(args.unit_test_dir, filename)
+                        output_file = os.path.join(output_dir, filename.replace(".xml", ".json"))
+                        convert_unit_test_to_json(input_file, output_file)
+                    else:
+                        print(f"{os.path.join(args.unit_test_dir, filename)} is not an xml file")
             else:
-                print(f"Could not find unit test output file at {args.unit_tests_path}")
+                print(f"Could not find unit test output dir at {args.unit_test_dir}")
 
-            if (os.path.exists(args.instrument_test_path)):
-                convert_instrument_test_to_json(args.instrument_test_path, instrument_output_file)
+            if (os.path.exists(args.instrument_test_dir) and os.path.isdir(args.instrument_test_dir)):
+                for filename in os.listdir(args.instrument_test_dir):
+                    if filename.endswith(".xml"):
+                        print(f"Converting {filename}")
+                        input_file = os.path.join(args.instrument_test_dir, filename)
+                        output_file = os.path.join(output_dir, filename.replace(".xml", ".json"))
+                        print(f"{output_file}")
+                        convert_instrument_test_to_json(input_file, output_file)
+                    else:
+                        print(f"{os.path.join(args.instrument_test_dir, filename)} is not an xml file")
             else:
-                print(f"Could not find unit test output file at {args.instrument_test_path}")
+                print(f"Could not find unit test output file at {args.instrument_test_dir}")
 
     except FileNotFoundError as e:
         print(f"File not found with error: {e}")
