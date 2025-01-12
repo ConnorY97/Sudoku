@@ -14,23 +14,23 @@ import my.sudoku.game.R
 import my.sudoku.game.viewmodel.GameViewModel
 import java.util.Locale
 
-class UIManager(private val context: Context) {
+class SudokuGridManager(private val context: Context) {
+
+    // Member variable for the Sudoku grid
+    private val sudokuGrid: GridLayout? = if (context is Activity) {
+        context.findViewById(R.id.sudokuGrid)
+    } else {
+        Log.e("UIManager", "Failed to retrieve sudokuGrid - context is not an Activity")
+        null
+    }
+
     fun getSudokuGrid(): GridLayout? {
-        if (context is Activity)
-        {
-            return context.findViewById<GridLayout>(R.id.sudokuGrid)
-        }
-        else
-        {
-            Log.e("getSudokuGrid", "Failed to retrieve sudokuGrid")
-            return null
-        }
+        return sudokuGrid
     }
 
     fun initializeSudokuGrid(
         viewModel: GameViewModel
     ) {
-        val sudokuGrid = getSudokuGrid()
         val gameState = viewModel.getGameState()
         for (row in 0 until 9) {
             for (col in 0 until 9) {
@@ -56,7 +56,7 @@ class UIManager(private val context: Context) {
 
                     if (isEditable) {
                         setOnClickListener {
-                            selectCell(row, col, getSudokuGrid()!!, context, viewModel)
+                            selectCell(row, col, viewModel)
                         }
                     }
 
@@ -83,11 +83,9 @@ class UIManager(private val context: Context) {
     private fun selectCell(
         row: Int,
         col: Int,
-        sudokuGrid: GridLayout,
-        context: Context,
         viewModel: GameViewModel
     ) {
-        clearCellHighlights(getSudokuGrid()!!, context)
+        clearCellHighlights(sudokuGrid!!, context)
         val cellIndex = row * 9 + col
         val selectedView = sudokuGrid.getChildAt(cellIndex)
         selectedView.setBackgroundColor(Color.YELLOW)

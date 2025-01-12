@@ -6,18 +6,10 @@ import com.google.gson.Gson
 import my.sudoku.game.viewmodel.GameViewModel
 
 class GameManager(private val context: Context) {
-
-    private val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
-    private val gson = Gson()
-
-    // Constants for shared preference keys
-    companion object {
-        private const val SAVED_BOARDS_KEY = "SavedBoards"
-        private const val BOARD_SUFFIX = "_board"
-        private const val EDITABLE_CELLS_SUFFIX = "_editableCells"
-        private const val ELAPSED_TIME_SUFFIX = "_elapsedTime"
-        private const val IS_FINISHED_SUFFIX = "_isFinished"
+    private val sharedPreferences by lazy {
+        context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
     }
+    private val gson = Gson()
 
     // Save game state
     fun saveGame(
