@@ -51,7 +51,7 @@ jobs:
       - name: Convert Results
         shell: bash
         run: |
-          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/"
+          python3 ./Scripts/GenerateResults.py "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/test-results/testDebugUnitTest" "/home/connor/Documents/Runners/Sudoku/_work/Sudoku/Sudoku/app/build/outputs/androidTest-results/connected/debug/"
 
       - name: Publish Results
         if: success()
