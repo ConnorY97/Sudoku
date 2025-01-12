@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import com.google.gson.Gson
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
+import my.sudoku.game.management.GameManager
 import my.sudoku.game.viewmodel.GameViewModel
 import org.junit.Test
 import org.mockito.Mockito.anyLong
@@ -52,13 +53,14 @@ class LoadingFunctionalityTesting {
         val gameState = GameState()
         val savedBoards = mutableSetOf<String>()
         val viewModel = GameViewModel()
+        val gameManager = GameManager(mockContext)
 
         // Mock retrieving saved boards
         `when`(mockSharedPreferences.getStringSet("SavedBoards", mutableSetOf()))
             .thenReturn(savedBoards)
 
         // Act
-        val result = saveGame(mockContext, boardName, gameState, elapsedTime, viewModel)
+        val result = gameManager.saveGame(boardName, gameState, elapsedTime, viewModel)
 
         // Assert
         assertEquals("Failed to save a board", true, result)
@@ -81,13 +83,13 @@ class LoadingFunctionalityTesting {
         val elapsedTime = 120L
         val viewModel = GameViewModel()
         val savedBoards = mutableSetOf(boardName) // Pretend the board already exists
-
+        val gameManager = GameManager(mockContext)
         // Mock retrieving saved boards
         `when`(mockSharedPreferences.getStringSet("SavedBoards", mutableSetOf()))
             .thenReturn(savedBoards)
 
         // Act
-        val result = saveGame(mockContext, boardName, gameState, elapsedTime, viewModel)
+        val result = gameManager.saveGame(boardName, gameState, elapsedTime, viewModel)
 
         // Assert
         assertEquals("Failed to save a board", false, result) // Saving should fail
@@ -105,6 +107,7 @@ class LoadingFunctionalityTesting {
         val board = Array(gridSize) { IntArray(gridSize) { 0 } }
         val editableCells = mapOf(Pair(0, 0) to true, Pair(1, 1) to false)
         val elapsedTime = 120L
+        val gameManager = GameManager(mockContext)
 
         // Mock stored data
         val boardJson = gson.toJson(board)
@@ -116,7 +119,7 @@ class LoadingFunctionalityTesting {
         `when`(mockSharedPreferences.getLong("${boardName}_elapsedTime", 0)).thenReturn(elapsedTime)
 
         // Act
-        val game = loadGame(mockContext, boardName)
+        val game = gameManager.loadGame(boardName)
 
         // Assert
         assertNotNull("Load failed", game) // Ensure result is not null

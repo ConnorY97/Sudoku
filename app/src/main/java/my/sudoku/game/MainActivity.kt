@@ -5,12 +5,10 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.text.InputType
 import android.util.Log
 import android.view.Gravity
 import android.view.Menu
@@ -25,8 +23,9 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
-import com.google.gson.Gson
 import my.sudoku.game.game.GameLogic
+import my.sudoku.game.management.GameManager
+import my.sudoku.game.ui.UIManager
 import my.sudoku.game.viewmodel.GameViewModel
 import java.util.Locale
 
@@ -40,7 +39,7 @@ class MainActivity : ComponentActivity() {
     // UI
     private val confirmSaveButton: Button by lazy { findViewById(R.id.confirmSaveButton) }
     private val boardNameInput: EditText by lazy { findViewById(R.id.boardNameInput) }
-    private val sudokuGrid: GridLayout by lazy { findViewById(R.id.sudokuGrid) }
+    //private val sudokuGrid: GridLayout by lazy { findViewById(R.id.sudokuGrid) }
     private val numberGrid: GridLayout by lazy { findViewById(R.id.numberGrid) }
     private val timer: Chronometer by lazy { findViewById(R.id.chronometer) }
 
@@ -49,6 +48,12 @@ class MainActivity : ComponentActivity() {
 
     // Initialize Game logic object
     private val gameLogic = GameLogic()
+
+    // Initialize the Manager
+    private val gameManager = GameManager(this)
+
+    // Initialize the UI Manager
+    private val uiManager = UIManager(this)
 
     // Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,7 +73,7 @@ class MainActivity : ComponentActivity() {
                 Log.i("onCreate", "Retrieved map name")
                 // Try loading the saved game
                 Log.i("onCreate", "Attempting to load game")
-                viewModel.getGameState().value = loadGame(this, boardName)
+                viewModel.getGameState().value = gameManager.loadGame(boardName)
                 Log.i("onCreate", "Successfully loaded board")
             } else {
                 // If no boardName is provided, show an error message
@@ -100,7 +105,7 @@ class MainActivity : ComponentActivity() {
 
         Log.i("onCreate", "Initializing UI")
         setUpUI()
-        initializeSudokuGrid()
+        uiManager.initializeSudokuGrid(viewModel)
 
         // Once everything has been initialized set up the number grid
         initializeNumberButtons(gameLogic)
@@ -155,55 +160,55 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun initializeSudokuGrid() {
-        val gameState = viewModel.getGameState()
-        for (row in 0 until 9) {
-            for (col in 0 until 9) {
-                val isEditable = Pair(row, col) in (gameState.value?.editableCells ?: return)
-                val cell = EditText(this).apply {
-                    layoutParams = GridLayout.LayoutParams().apply {
-                        width = 100
-                        height = 100
-                        columnSpec = GridLayout.spec(col)
-                        rowSpec = GridLayout.spec(row)
-                        setMargins(
-                            if (col % 3 == 0 && col != 0) 4 else 1,
-                            if (row % 3 == 0 && row != 0) 4 else 1,
-                            1,
-                            1
-                        )
-                    }
-                    gravity = Gravity.CENTER
-                    textAlignment = EditText.TEXT_ALIGNMENT_CENTER
-                    setBackgroundColor(ContextCompat.getColor(context, R.color.cell_background))
-                    setTextColor(Color.BLACK)
-                    setPadding(10, 10, 10, 10)
-
-                    if (isEditable) {
-                        setOnClickListener {
-                            selectCell(row, col, sudokuGrid, context, viewModel)
-                        }
-                    }
-
-                    // Make sure the cells cannot be interacted with a keyboard
-                    isFocusableInTouchMode = false
-                    isFocusable = false
-                    inputType = InputType.TYPE_NULL
-                }
-                val number = gameState.value?.board?.get(row)?.get(col)
-                if (number != 0) {
-                    cell.setText(String.format(Locale.getDefault(), "%d", number))
-                    if (!isEditable) {
-                        cell.setTypeface(null, Typeface.BOLD)
-                    }
-                } else {
-                    cell.setText("")
-                }
-
-                sudokuGrid.addView(cell)
-            }
-        }
-    }
+//    private fun initializeSudokuGrid() {
+//        val gameState = viewModel.getGameState()
+//        for (row in 0 until 9) {
+//            for (col in 0 until 9) {
+//                val isEditable = Pair(row, col) in (gameState.value?.editableCells ?: return)
+//                val cell = EditText(this).apply {
+//                    layoutParams = GridLayout.LayoutParams().apply {
+//                        width = 100
+//                        height = 100
+//                        columnSpec = GridLayout.spec(col)
+//                        rowSpec = GridLayout.spec(row)
+//                        setMargins(
+//                            if (col % 3 == 0 && col != 0) 4 else 1,
+//                            if (row % 3 == 0 && row != 0) 4 else 1,
+//                            1,
+//                            1
+//                        )
+//                    }
+//                    gravity = Gravity.CENTER
+//                    textAlignment = EditText.TEXT_ALIGNMENT_CENTER
+//                    setBackgroundColor(ContextCompat.getColor(context, R.color.cell_background))
+//                    setTextColor(Color.BLACK)
+//                    setPadding(10, 10, 10, 10)
+//
+//                    if (isEditable) {
+//                        setOnClickListener {
+//                            selectCell(row, col, sudokuGrid, context, viewModel)
+//                        }
+//                    }
+//
+//                    // Make sure the cells cannot be interacted with a keyboard
+//                    isFocusableInTouchMode = false
+//                    isFocusable = false
+//                    inputType = InputType.TYPE_NULL
+//                }
+//                val number = gameState.value?.board?.get(row)?.get(col)
+//                if (number != 0) {
+//                    cell.setText(String.format(Locale.getDefault(), "%d", number))
+//                    if (!isEditable) {
+//                        cell.setTypeface(null, Typeface.BOLD)
+//                    }
+//                } else {
+//                    cell.setText("")
+//                }
+//
+//                sudokuGrid.addView(cell)
+//            }
+//        }
+//    }
 
     private fun setUpUI() {
         val gameState = viewModel.getGameState()
@@ -236,7 +241,7 @@ class MainActivity : ComponentActivity() {
                 // Save the game with the entered board name
                 val finalTime = SystemClock.elapsedRealtime() - timer.base
                 val success =
-                    saveGame(this, boardName, gameState.value!!, finalTime, viewModel)
+                    gameManager.saveGame(boardName, gameState.value!!, finalTime, viewModel)
                 if (success) {
                     if (viewModel.getFinished()) {
                         //If the board is finished the we should return to the home screen
@@ -254,7 +259,7 @@ class MainActivity : ComponentActivity() {
                         confirmSaveButton.visibility = View.GONE
 
                         // Show the board and buttons again
-                        sudokuGrid.visibility = View.VISIBLE
+                        uiManager.getSudokuGrid()!!.visibility = View.VISIBLE
                         numberGrid.visibility = View.VISIBLE
 
                         hideKeyboard(this)
@@ -290,23 +295,23 @@ class MainActivity : ComponentActivity() {
                 }
 
                 setOnClickListener {
-                    onNumberClicked(context, number, sudokuGrid, gameState.value!!, gameLogic, viewModel)
+                    onNumberClicked(context, number, uiManager.getSudokuGrid()!!, gameState.value!!, gameLogic, viewModel)
 
                     if (isErrorCheckingEnabled(context)) {
                         viewModel.getSelectedCell()?.let { (row, col) ->
                             val cellIndex = row * 9 + col
                             if (gameLogic.checkInput(gameState.value?.board!!, row, col, number)) {
-                                (sudokuGrid.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(
+                                (uiManager.getSudokuGrid()!!.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(
                                     Color.GREEN
                                 )
                             } else {
-                                (sudokuGrid.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(
+                                (uiManager.getSudokuGrid()!!.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(
                                     Color.RED
                                 )
                             }
 
                             Handler(Looper.getMainLooper()).postDelayed({
-                                (sudokuGrid.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(ContextCompat.getColor(context, R.color.cell_background))
+                                (uiManager.getSudokuGrid()!!.getChildAt(cellIndex) as? EditText)?.setBackgroundColor(ContextCompat.getColor(context, R.color.cell_background))
                                 // Reset to default background
                             }, 250) // Adjust the delay as necessary
                         }
@@ -411,29 +416,6 @@ fun onNumberClicked(
     }
 }
 
-private fun selectCell(
-    row: Int,
-    col: Int,
-    sudokuGrid: GridLayout,
-    context: Context,
-    viewModel: GameViewModel
-) {
-    clearCellHighlights(sudokuGrid, context)
-    val cellIndex = row * 9 + col
-    val selectedView = sudokuGrid.getChildAt(cellIndex)
-    selectedView.setBackgroundColor(Color.YELLOW)
-    viewModel.setSelectedCell(Pair(row, col))
-}
-
-private fun clearCellHighlights(
-    sudokuGrid: GridLayout,
-    context: Context
-) {
-    for (i in 0 until sudokuGrid.childCount) {
-        sudokuGrid.getChildAt(i).setBackgroundColor(ContextCompat.getColor(context, R.color.cell_background))
-    }
-}
-
 fun showCorrectCells(
     sudokuGrid: GridLayout,
     editableCells: MutableMap<Pair<Int, Int>, Boolean>,
@@ -472,80 +454,4 @@ fun showCorrectCells(
     }, 2000) // Adjust the delay as necessary
 
     return finished
-}
-
-// Save game state
-fun saveGame(
-    context: Context,
-    boardName: String,
-    gameState: GameState,
-    finalTime: Long,
-    viewModel: GameViewModel
-): Boolean {
-    val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
-    val editor = sharedPreferences.edit()
-
-    // Retrieve existing saved boards
-    val savedBoards = sharedPreferences.getStringSet("SavedBoards", mutableSetOf()) ?: mutableSetOf()
-
-    // Ensure unique board name
-    if (savedBoards.contains(boardName)) {
-        return false // Indicate failure
-    }
-
-    // Add new board name to saved list
-    savedBoards += boardName
-    editor.putStringSet("SavedBoards", savedBoards)
-
-    // Save board and editable cells
-    val gson = Gson()
-    editor.putString("${boardName}_board", gson.toJson(gameState.board))
-    editor.putString("${boardName}_editableCells", gson.toJson(gameState.editableCells))
-
-    // Save timer
-    editor.putLong("${boardName}_elapsedTime", finalTime)
-
-    // Save whether the game is finished
-    editor.putBoolean("${boardName}_isFinished", viewModel.getFinished())
-
-    // Commit changes
-    editor.apply()
-    return true // Indicate success
-}
-
-// Load game state
-fun loadGame(context: Context,
-             boardName: String
-): GameState {
-    val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
-    val gson = Gson()
-
-    // Load board
-    val boardJson = sharedPreferences.getString("${boardName}_board", null)
-    val board = if (boardJson != null) gson.fromJson(boardJson, Array<IntArray>::class.java) else null
-
-    // Load editable cells
-    val editableCellsJson = sharedPreferences.getString("${boardName}_editableCells", null)
-    val editableCells = if (editableCellsJson != null) {
-        val tempMap = gson.fromJson(editableCellsJson, Map::class.java) as Map<*, *>
-
-        tempMap.mapNotNull { (key, value) ->
-            // Parse the string key "(x, y)" into a Pair<Int, Int>
-            val match = "\\((\\d+),\\s*(\\d+)\\)".toRegex().matchEntire(key as String)
-            val (first, second) = match?.destructured ?: return@mapNotNull null
-            Pair(first.toInt(), second.toInt()) to value as Boolean
-        }.toMap()
-    } else {
-        null
-    }
-
-    // Load elapsed time
-    val elapsedTime = sharedPreferences.getLong("${boardName}_elapsedTime", 0)
-
-    // Load if the game is finished
-    val finished = sharedPreferences.getBoolean("${boardName}_isFinished", false)
-
-    val game = GameState(board as Array<IntArray>, editableCells as MutableMap<Pair<Int, Int>, Boolean>, elapsedTime, finished)
-
-    return game
 }
