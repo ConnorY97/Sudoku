@@ -16,17 +16,18 @@ class GameManager(private val context: Context) {
         boardName: String,
         gameState: GameState,
         finalTime: Long,
-        viewModel: GameViewModel
+        viewModel: GameViewModel,
+        loaded: Boolean = false
     ): Boolean {
         val editor = sharedPreferences.edit()
 
         // Retrieve existing saved boards
         val savedBoards = sharedPreferences.getStringSet("SavedBoards", mutableSetOf()) ?: mutableSetOf()
 
-//        // Ensure unique board name
-//        if (savedBoards.contains(boardName)) {
-//            return false // Indicate failure
-//        }
+        // Ensure unique board name and it has not been loaded
+        if (savedBoards.contains(boardName) && !loaded) {
+            return false // Indicate failure
+        }
 
         // Add new board name to saved list
         savedBoards += boardName

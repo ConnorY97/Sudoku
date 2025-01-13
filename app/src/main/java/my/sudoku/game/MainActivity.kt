@@ -122,7 +122,7 @@ class MainActivity : ComponentActivity() {
                 {
                     Log.i("menu_save", "Board name present, overriding existing save")
                     val finalTime = SystemClock.elapsedRealtime() - timer.base
-                    val success = gameManager.saveGame(boardName, viewModel.getGameState().value!!, finalTime, viewModel)
+                    val success = gameManager.saveGame(boardName, viewModel.getGameState().value!!, finalTime, viewModel, true)
                     if (success) {
                         Toast.makeText(this, "Board saved successfully!", Toast.LENGTH_SHORT).show()
                         true
