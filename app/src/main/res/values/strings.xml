@@ -24,7 +24,7 @@
     <string name="sub_menu_exit">Exit</string>
     <string name="no_save_games_available">No saved games available</string>
     <string name="clear_all">Clear All</string>
-    <string name="time">Time: %1$s | %2$s</string>
+    <string name="time">%1$s, %2$s, Completeness: %3$s</string>
     <string name="back">Back</string>
     <string name="delete_button">Delete</string>
     <string name="play_button">Play</string>

@@ -9,13 +9,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.ComponentActivity
+import com.google.gson.Gson
 import java.util.Locale
+
+data class Quadruple<A, B, C, D>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D
+)
 
 class LoadActivity : ComponentActivity() {
     private lateinit var listView: ListView
     private lateinit var emptyStateTextView: TextView
     private lateinit var adapter: SavedGamesAdapter
-    private var savedBoards: MutableList<Triple<String, String, Boolean>> = mutableListOf()
+    private var savedBoards: MutableList<Quadruple<String, String, Boolean, Int>> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +64,6 @@ class LoadActivity : ComponentActivity() {
         adapter = SavedGamesAdapter(this, savedBoards)
         listView.adapter = adapter
     }
-
 
     fun showDeleteConfirmationDialog(boardName: String, position: Int) {
         AlertDialog.Builder(this)
@@ -116,17 +123,35 @@ class LoadActivity : ComponentActivity() {
         emptyStateTextView.visibility = View.VISIBLE
     }
 
-    private fun getSavedBoardsWithDetails(context: Context): List<Triple<String, String, Boolean>> {
+    private fun getSavedBoardsWithDetails(context: Context): List<Quadruple<String, String, Boolean, Int>> {
         val sharedPreferences = context.getSharedPreferences("SudokuGame", Context.MODE_PRIVATE)
         val savedBoards = sharedPreferences.getStringSet("SavedBoards", mutableSetOf()) ?: return emptyList()
+        val gson = Gson()
 
         return savedBoards.map { boardName ->
             val elapsedTime = sharedPreferences.getLong("${boardName}_elapsedTime", 0L)
             val formattedTime = formatElapsedTime(elapsedTime)
             val isFinished = sharedPreferences.getBoolean("${boardName}_isFinished", false)
-            Triple(boardName, formattedTime, isFinished)
+
+            // Get the completion percentage
+            val boardJson = sharedPreferences.getString("${boardName}_board", null)
+            val board = if (boardJson != null) gson.fromJson(boardJson, Array<IntArray>::class.java) else null
+            var empty = 0
+            if (board != null) {
+                for (row in 0 until 9) {
+                    for (col in 0 until 9) {
+                        if (board[row][col] == 0) {
+                            empty++
+                        }
+                    }
+                }
+            }
+            val percentageFinished = if (empty > 0) (81 - empty) * 100 / 81 else 100
+
+            Quadruple(boardName, formattedTime, isFinished, percentageFinished)
         }
     }
+
 
     private fun formatElapsedTime(elapsedMillis: Long): String {
         val minutes = (elapsedMillis / 1000) / 60
@@ -144,7 +169,7 @@ class LoadActivity : ComponentActivity() {
 
 class SavedGamesAdapter(
     private val context: Context,
-    private val savedBoards: List<Triple<String, String, Boolean>>
+    private var savedBoards: MutableList<Quadruple<String, String, Boolean, Int>> = mutableListOf()
 ) : BaseAdapter() {
 
     override fun getCount(): Int = savedBoards.size
@@ -155,12 +180,16 @@ class SavedGamesAdapter(
         val view = convertView ?: LayoutInflater.from(context)
             .inflate(R.layout.list_item_save_game, parent, false)
 
-        val (name, timer, isFinished) = savedBoards[position]
+        val (name, timer, isFinished, percentage) = savedBoards[position]
 
         // Set the text for the name and details TextViews
         view.findViewById<TextView>(R.id.nameTextView).text = name
-        view.findViewById<TextView>(R.id.detailsTextView).text =
-            context.getString(R.string.time, timer, if (isFinished) "Finished" else "Incomplete")
+        view.findViewById<TextView>(R.id.detailsTextView).text = context.getString(
+            R.string.time,
+            timer,
+            if (isFinished) "Finished" else "Incomplete",
+            "$percentage%"
+        )
 
         // Delete button functionality
         view.findViewById<Button>(R.id.deleteButton).setOnClickListener {
@@ -180,4 +209,5 @@ class SavedGamesAdapter(
         return view
     }
 }
+
 
