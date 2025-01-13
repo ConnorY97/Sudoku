@@ -23,10 +23,10 @@ class GameManager(private val context: Context) {
         // Retrieve existing saved boards
         val savedBoards = sharedPreferences.getStringSet("SavedBoards", mutableSetOf()) ?: mutableSetOf()
 
-        // Ensure unique board name
-        if (savedBoards.contains(boardName)) {
-            return false // Indicate failure
-        }
+//        // Ensure unique board name
+//        if (savedBoards.contains(boardName)) {
+//            return false // Indicate failure
+//        }
 
         // Add new board name to saved list
         savedBoards += boardName

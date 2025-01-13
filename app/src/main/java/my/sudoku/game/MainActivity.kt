@@ -28,6 +28,7 @@ const val GRID_SIZE = 9
 const val PREFS_NAME = "AppPreferences"
 const val KEY_ERROR_CHECKING = "IS_ERROR_CHECKING_ENABLED"
 const val NUMBER_MARGIN_BUFFER = 180
+const val DEFAULT_BOARD_NAME = "Default101"
 
 class MainActivity : ComponentActivity() {
     // UI
@@ -35,28 +36,13 @@ class MainActivity : ComponentActivity() {
     private val boardNameInput: EditText by lazy { findViewById(R.id.boardNameInput) }
     private val timer: Chronometer by lazy { findViewById(R.id.chronometer) }
 
-//    // Initializing managers
-//    // Initialize GameState with its default values
-//    private val viewModel: GameViewModel by viewModels()
-//
-//    // Initialize Game logic object
-//    private val gameLogic = GameLogic()
-//
-//    // Initialize the Manager
-//    private val gameManager = GameManager(this)
-//
-//    // Initialize the sudoku grid
-//    private val sudokuGridManager = SudokuGridManager(this)
-//
-//    // Initialize the number grid
-//    private val numberGridManager = NumberGridManager(this)
-
     // Variables to be initialized in onCreate
     private lateinit var viewModel: GameViewModel
     private lateinit var gameLogic: GameLogic
     private lateinit var gameManager: GameManager
     private lateinit var sudokuGridManager: SudokuGridManager
     private lateinit var numberGridManager: NumberGridManager
+    private lateinit var boardName: String
 
     // Lifecycle Methods
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,28 +62,21 @@ class MainActivity : ComponentActivity() {
         // Get the game mode from the Intent (null check instead of empty string check)
         val gameMode = intent.getStringExtra("GAME_MODE")
 
+        // Assigning a default name to the board that will be overridden if the board is loaded
+        Log.i("onCreate", "Assigning default boardName")
+        boardName = DEFAULT_BOARD_NAME
+
         Log.i("onCreate", "Check Game Mode")
         if (!gameMode.isNullOrEmpty()) {
             Log.i("onCreate", "Attempt to load map")
             // If in load game mode, try to load the board
-            val boardName = intent.getStringExtra("BOARD_NAME")
-            if (boardName != null) {
-                Log.i("onCreate", "Retrieved map name")
-                // Try loading the saved game
-                Log.i("onCreate", "Attempting to load game")
-                viewModel.getGameState().value = gameManager.loadGame(boardName)
-                Log.i("onCreate", "Successfully loaded board")
-            } else {
-                // If no boardName is provided, show an error message
-                Log.i("onCreate", "Invalid board name, returning home")
-                Toast.makeText(this, "Invalid board name!", Toast.LENGTH_SHORT).show()
-
-                val homeScreen = Intent(this, HomeActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                }
-                startActivity(homeScreen)
-                finish()  // Optional if you want to finish this activity explicitly
-            }
+                Log.i("onCreate", "Name is null")
+            boardName = intent.getStringExtra("BOARD_NAME").toString()
+            Log.i("onCreate", "Retrieved map name")
+            // Try loading the saved game
+            Log.i("onCreate", "Attempting to load game")
+            viewModel.getGameState().value = gameManager.loadGame(boardName)
+            Log.i("onCreate", "Successfully loaded board")
         } else {
             Log.i("onCreate", "Initializing Variables")
             val difficulty = intent.getStringExtra("DIFFICULTY_LEVEL")
@@ -112,7 +91,6 @@ class MainActivity : ComponentActivity() {
                 startActivity(homeScreen)
                 finish()  // Optional if you want to finish this activity explicitly
             }
-
         }
 
         Log.i("onCreate", "Initializing UI")
@@ -139,13 +117,28 @@ class MainActivity : ComponentActivity() {
         return when (item.itemId) {
             R.id.menu_save -> {
                 // Handle Save Game action
-                Toast.makeText(this, "Save Game clicked", Toast.LENGTH_SHORT).show()
-                findViewById<GridLayout>(R.id.sudokuGrid).visibility = View.GONE
-                findViewById<GridLayout>(R.id.numberGrid).visibility = View.GONE
-                timer.visibility = View.INVISIBLE
-                findViewById<Button>(R.id.confirmSaveButton).visibility = View.VISIBLE
-                findViewById<EditText>(R.id.boardNameInput).visibility = View.VISIBLE
-                true
+                Log.i("menu_save", "Saving board")
+                if (boardName != DEFAULT_BOARD_NAME)
+                {
+                    Log.i("menu_save", "Board name present, overriding existing save")
+                    val finalTime = SystemClock.elapsedRealtime() - timer.base
+                    val success = gameManager.saveGame(boardName, viewModel.getGameState().value!!, finalTime, viewModel)
+                    if (success) {
+                        Toast.makeText(this, "Board saved successfully!", Toast.LENGTH_SHORT).show()
+                        true
+                    } else {
+                        Toast.makeText(this, "Failed to save the board!", Toast.LENGTH_SHORT).show()
+                        false
+                    }
+                } else {
+                    Log.i("menu_save", "Board name not present, creating new save")
+                    findViewById<GridLayout>(R.id.sudokuGrid).visibility = View.GONE
+                    findViewById<GridLayout>(R.id.numberGrid).visibility = View.GONE
+                    timer.visibility = View.INVISIBLE
+                    findViewById<Button>(R.id.confirmSaveButton).visibility = View.VISIBLE
+                    findViewById<EditText>(R.id.boardNameInput).visibility = View.VISIBLE
+                    true
+                }
             }
             R.id.action_settings -> {
                 // No specific action here since submenu items will be handled below
@@ -173,20 +166,19 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setUpUI() {
-        val gameState = viewModel.getGameState()
         Log.i("setUpUI", "Buttons created")
 
         // Timer
         val timer: Chronometer = findViewById(R.id.chronometer)
         Log.i("setUpUI", "Timer created")
 
-        if (gameState.value?.elapsedTime == Long.MAX_VALUE) {
+        if (viewModel.getGameState().value?.elapsedTime == Long.MAX_VALUE) {
             // Start the timer
             timer.base = SystemClock.elapsedRealtime()
         }
         else
         {
-            timer.base = SystemClock.elapsedRealtime() - gameState.value?.elapsedTime!!
+            timer.base = SystemClock.elapsedRealtime() - viewModel.getGameState().value?.elapsedTime!!
         }
         timer.start()
         Log.i("setUpUI", "Timer Started")
@@ -203,7 +195,7 @@ class MainActivity : ComponentActivity() {
                 // Save the game with the entered board name
                 val finalTime = SystemClock.elapsedRealtime() - timer.base
                 val success =
-                    gameManager.saveGame(boardName, gameState.value!!, finalTime, viewModel)
+                    gameManager.saveGame(boardName, viewModel.getGameState().value!!, finalTime, viewModel)
                 if (success) {
                     if (viewModel.getFinished()) {
                         //If the board is finished the we should return to the home screen
