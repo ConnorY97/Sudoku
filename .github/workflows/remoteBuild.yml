@@ -1,0 +1,62 @@
+name: Remote Build and Create Release
+
+on:
+  push:
+      branches:
+        - "workflow-update"
+
+env:
+  APK_NAME: Sudoku.apk
+  APK_PATH: app/build/outputs/apk/debug
+
+jobs:
+  build:
+    runs-on : ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3.13.0
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+
+      - name: Grant execute permissions for gradlew
+        run: chmod 766 gradlew
+
+      - name: Build with Gradle
+        run : ./gradlew build
+
+      - name: Rename APK
+        shell: bash
+        run: |
+          mv $APK_PATH/app-debug.apk $APK_PATH/$APK_NAME
+
+      - name: Get Commit Message
+        shell: bash
+        run: |
+            COMMIT_MSG=$(git log -1 --pretty=%B)
+            echo "COMMIT_MSG=$COMMIT_MSG" >> $GITHUB_ENV
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+            name: "${{ env.COMMIT_MSG }}"
+            body_path: "./Scripts/revision.txt"
+            body: "Continued work on development"
+            draft: false
+            token: ${{ secrets.GITHUB_TOKEN }}
+            files:
+              $APK_PATH/$APK_NAME
