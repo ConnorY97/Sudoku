@@ -2,8 +2,8 @@ name: Remote Build and Create Release
 
 on:
   push:
-      branches:
-        - "workflow-update"
+      tags:
+          - "*"
 
 env:
   APK_NAME: Sudoku.apk
