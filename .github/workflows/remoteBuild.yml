@@ -57,6 +57,6 @@ jobs:
             body_path: "./Scripts/revision.txt"
             body: "Continued work on development"
             draft: false
-            token: ${{ secrets.GITHUB_TOKEN }}
+            token: ${{ secrets.TOKEN }}
             files:
-              $APK_PATH/$APK_NAME
+              ${{ env.APK_PATH }}/${{ env.APK_NAME }}
